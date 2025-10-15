@@ -91,6 +91,22 @@ class Map:
     def get_dim(self) -> np.ndarray:
         return self._dim
 
+    def get_obstacles(self) -> list[np.ndarray]:
+        return self._obstacles
+
+    def grid_index_to_world_coord(self, loc: tuple[int, int]) -> np.ndarray:
+        """
+        Get world-frame location of a cell's top left corner given its grid indices
+
+        :param loc: grid indices
+        :type loc: tuple[row, col]
+        :return: world dimensions of the cell
+        :rtype: ndarray[[xmin, xmax], [ymin, ymax]]
+        """
+        x = (loc[1] * self._c.cell_size) + self._c.dimensions[0, 0]
+        y = (loc[0] * self._c.cell_size) + self._c.dimensions[1, 0]
+        return np.array([x, y])
+
     @classmethod
     def construct_from_dataset(cls, ds: Dataset, config: Config) -> Map:
         """

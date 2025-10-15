@@ -194,7 +194,24 @@ def _plot_trajectory(
 
 
 def plot_map(map: Map, ax: Axes) -> None:
-    ax.set_xlim(*map.get_dim()[0, :])
-    ax.set_ylim(*map.get_dim()[1, :])
+    xlim = map.get_dim()[0, :]
+    ylim = map.get_dim()[1, :]
+    ax.set_xlim(*xlim)
+    ax.set_ylim(*ylim)
 
     ax.grid(True)
+
+    for obs in map.get_obstacles():
+        loc = map.world_coords_to_grid_index(obs)
+        coord = map.grid_index_to_world_coord(loc)
+        coord_tuple = (coord[0], coord[1])
+        ax.add_patch(patches.Rectangle(coord_tuple, 2, 2, color="black"))
+
+    obs_proxy = patches.Patch(facecolor="black", label="Obstacles")
+
+    ax.legend(
+        handles=[obs_proxy] + ax.get_legend_handles_labels()[0],
+        labels=["Obstacles"] + ax.get_legend_handles_labels()[1],
+        loc="center left",
+        bbox_to_anchor=(0.8, 0.95),
+    )
