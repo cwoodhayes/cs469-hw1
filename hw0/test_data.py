@@ -12,7 +12,7 @@ REPO_ROOT = Path(__file__).parent.parent
 
 
 def test_from_dataset_directory():
-    p = REPO_ROOT / "data/ds0"
+    p = REPO_ROOT / "data/ds1"
     ds = Dataset.from_dataset_directory(p)
 
     assert ds.barcodes.shape == (20, 2)

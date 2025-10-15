@@ -28,6 +28,9 @@ def default_empty_map() -> Map:
                          [
                             (
                                 (0, 0), (6, 2)
+                            ),
+                            (
+                                (-1.5, -5.5), (0, 0)
                             )
                          ])
 def test_world_coord_to_idx(world_coord, expected_idx, default_empty_map):
