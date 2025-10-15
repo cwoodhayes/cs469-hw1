@@ -11,6 +11,7 @@ import pandas as pd
 import seaborn as sbs
 
 from hw0.data import Dataset
+from hw0.map import Map
 
 
 def plot_trajectories_pretty(
@@ -39,9 +40,9 @@ def plot_trajectories_pretty(
     for lm in ds.landmarks.itertuples(index=False):
         # these only actually show up if you zoom wayyyyy in. the stdevs are super small.
         oval = patches.Ellipse(
-            (lm.x_m, lm.y_m), # type: ignore
-            width=lm.x_std_dev * 1000,# type: ignore
-            height=lm.y_std_dev * 1000,# type: ignore
+            (lm.x_m, lm.y_m),  # type: ignore
+            width=lm.x_std_dev * 1000,  # type: ignore
+            height=lm.y_std_dev * 1000,  # type: ignore
             facecolor="black",
             lw=0.5,
         )
@@ -190,3 +191,10 @@ def _plot_trajectory(
         label=f"{label} END",
         zorder=2.5,
     )
+
+
+def plot_map(map: Map, ax: Axes) -> None:
+    ax.set_xlim(*map.get_dim()[0, :])
+    ax.set_ylim(*map.get_dim()[1, :])
+
+    ax.grid(True)

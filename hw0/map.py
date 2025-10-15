@@ -88,6 +88,9 @@ class Map:
             self.grid[row, col] = 1
             self._obstacles.append(obs)
 
+    def get_dim(self) -> np.ndarray:
+        return self._dim
+
     @classmethod
     def construct_from_dataset(cls, ds: Dataset, config: Config) -> Map:
         """
