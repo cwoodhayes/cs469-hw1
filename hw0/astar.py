@@ -41,7 +41,7 @@ class AStar:
 
         # for now just return dummy path to bottom of map
         p = Path()
-        for row_idx in range(map.get_start_loc()[0], map.grid.shape[0]):
+        for row_idx in range(map.get_start_loc()[0], map.grid.shape[0] + 1):
             p.locs.append(np.array((row_idx, map.get_start_loc()[1])))
 
         return p
