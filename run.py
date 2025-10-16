@@ -35,7 +35,7 @@ def q1(ds: Dataset):
                 [-6, 6],
             ]
         ),
-        cell_size=1.0,
+        cell_size=0.2,
         start=np.array([0.5, -1.5]),
         goal=np.array([0.5, 1.5]),
     )

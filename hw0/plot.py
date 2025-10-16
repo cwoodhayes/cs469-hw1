@@ -231,6 +231,8 @@ def plot_map(map: Map, ax: Axes) -> None:
     ax.set_ylim(*ylim)
 
     ax.grid(True)
+    ax.xaxis.set_minor_locator(MultipleLocator(map.c.cell_size))
+    ax.yaxis.set_minor_locator(MultipleLocator(map.c.cell_size))
     ax.xaxis.set_major_locator(MultipleLocator(1))
     ax.yaxis.set_major_locator(MultipleLocator(1))
 
