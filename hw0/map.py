@@ -9,6 +9,7 @@ from typing import Iterable
 import numpy as np
 
 from hw0.data import Dataset
+from hw0.utils import write_square_kernel_with_clip
 
 
 class Map:
@@ -32,7 +33,7 @@ class Map:
         start: np.ndarray
         goal: np.ndarray
 
-        obstacle_radius: float | None = None
+        obstacle_radius: float = 0
         # radius is only relevant for q7 and above
 
     def __init__(self, config: Config, obstacles: list[np.ndarray]) -> None:
@@ -59,6 +60,7 @@ class Map:
         # maintain these lists mostly for plotting
         self._obstacles = list()
         self._obstacle_locs = set()
+        self._obstacle_radius_idx = round(self.c.obstacle_radius / self.c.cell_size)
 
         self.add_obstacles(obstacles)
         self._start_loc = self.world_coords_to_grid_loc(config.start)
@@ -124,14 +126,16 @@ class Map:
         """
         for obs in obstacles:
             row, col = self.world_coords_to_grid_loc(obs)
-            self.grid[row, col] = 1
+            write_square_kernel_with_clip(
+                self.grid, (row, col), self._obstacle_radius_idx, 1
+            )
 
             self._obstacles.append(obs)
             self._obstacle_locs.add((row, col))
 
     def get_obstacles(self) -> list[np.ndarray]:
         """
-        Returns all
+        Returns all obstacle anchor points (centers) in world-coordinates
 
         :param self: Description
         :return: Description

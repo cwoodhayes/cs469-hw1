@@ -54,6 +54,7 @@ def q7(ds: Dataset):
             cell_size=0.1,
             start=np.array(start_loc),
             goal=np.array(goal_loc),
+            obstacle_radius=0.3,
         )
 
         path, map = run_astar_online(ds, cfg)

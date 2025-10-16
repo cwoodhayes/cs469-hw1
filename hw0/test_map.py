@@ -38,7 +38,7 @@ def default_empty_map() -> Map:
 )
 def test_world_coord_to_idx(world_coord, expected_idx, default_empty_map):
     coord = np.array(world_coord)
-    loc = default_empty_map.world_coords_to_grid_index(coord)
+    loc = default_empty_map.world_coords_to_grid_loc(coord)
     assert loc[0] == expected_idx[0]
     assert loc[1] == expected_idx[1]
 
@@ -52,7 +52,7 @@ def test_world_coord_to_idx(world_coord, expected_idx, default_empty_map):
 )
 def test_idx_to_world_coord(idx, expected_coord, default_empty_map):
     expected_coord = np.array(expected_coord)
-    coord = default_empty_map.grid_index_to_world_coords_corner(idx)
+    coord = default_empty_map.grid_loc_to_world_coords_corner(idx)
     np.testing.assert_allclose(coord, expected_coord)
 
 
@@ -67,9 +67,9 @@ def test_idx_to_world_coord(idx, expected_coord, default_empty_map):
 )
 def test_roundtrip_coords(world, default_empty_map):
     coord = np.array(world)
-    loc = default_empty_map.world_coords_to_grid_index(coord)
-    new_coord = default_empty_map.grid_index_to_world_coords_corner(loc)
-    new_loc = default_empty_map.world_coords_to_grid_index(new_coord)
+    loc = default_empty_map.world_coords_to_grid_loc(coord)
+    new_coord = default_empty_map.grid_loc_to_world_coords_corner(loc)
+    new_loc = default_empty_map.world_coords_to_grid_loc(new_coord)
 
     assert loc[0] == new_loc[0]
     assert loc[1] == new_loc[1]
