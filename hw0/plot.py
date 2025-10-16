@@ -244,8 +244,8 @@ def plot_map(map: Map, ax: Axes) -> None:
     ax.yaxis.set_major_locator(MultipleLocator(1))
 
     ax.legend(
-        loc="center left",
-        bbox_to_anchor=(0.8, 0.95),
+        # loc="center left",
+        # bbox_to_anchor=(0.8, 0.95),
     )
 
 
@@ -265,6 +265,6 @@ def plot_path_on_map(map: Map, ax: Axes, p: astar.Path) -> None:
     ax.plot(c_arr[:, 0], c_arr[:, 1], "bo-", label="Robot Path")
 
     ax.legend(
-        loc="center left",
-        bbox_to_anchor=(0.8, 0.95),
+        # loc="center left",
+        # bbox_to_anchor=(0.8, 0.95),
     )

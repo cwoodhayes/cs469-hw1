@@ -38,7 +38,7 @@ class Path:
     def print(self) -> None:
         print("\n~~~~~~~~~~~~~\nPATH:")
         for loc in self.locs:
-            print(loc)
+            print(f"{loc[0]}, {loc[1]}")
         print("~~~~~~~~~~~~~~~")
 
 
