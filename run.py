@@ -29,8 +29,8 @@ def main():
     # my assigned dataset is ds1, so I'm hardcoding this
     ds = Dataset.from_dataset_directory(REPO_ROOT / "data/ds1")
 
-    # q3(ds)
-    # q5(ds)
+    q3(ds)
+    q5(ds)
     q7(ds)
 
 
@@ -64,7 +64,9 @@ def q7(ds: Dataset):
         plot_path_on_map(map, axes[idx], path, groundtruth_map)
         axes[idx].set_title(f"S={start_loc}, G={goal_loc}")
 
-    fig.suptitle("Online A* paths (cell size = .1x.1m)", fontsize=16, fontweight="bold")
+    fig.suptitle(
+        "Q7: Online A* paths (cell size = .1x.1m)", fontsize=16, fontweight="bold"
+    )
     plt.show()
 
 
@@ -97,7 +99,7 @@ def q5(ds: Dataset):
         plot_path_on_map(map, axes[idx], path, groundtruth_map)
         axes[idx].set_title(f"S={start_loc}, G={goal_loc}")
 
-    fig.suptitle("Online A* paths", fontsize=16, fontweight="bold")
+    fig.suptitle("Q5: Online A* paths", fontsize=16, fontweight="bold")
     plt.show()
 
 
@@ -132,7 +134,7 @@ def q3(ds: Dataset):
         plot_path_on_map(map, axes[idx], path)
         axes[idx].set_title(f"S={start_loc}, G={goal_loc}")
 
-    fig.suptitle("Offline A* solutions", fontsize=16, fontweight="bold")
+    fig.suptitle("Q3: Offline A* solutions", fontsize=16, fontweight="bold")
     plt.show()
 
 
