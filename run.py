@@ -29,9 +29,9 @@ def main():
     # my assigned dataset is ds1, so I'm hardcoding this
     ds = Dataset.from_dataset_directory(REPO_ROOT / "data/ds1")
 
-    q3(ds)
-    q5(ds)
-    # q7(ds)
+    # q3(ds)
+    # q5(ds)
+    q7(ds)
 
 
 def q7(ds: Dataset):

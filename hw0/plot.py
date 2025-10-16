@@ -198,7 +198,6 @@ def plot_map(map: Map, ax: Axes, groundtruth_map: Map | None = None) -> None:
     ##### Plot the obstacles
     patch = None
     obs_locs = map.get_obstacle_locs()
-    print(f"OBJ LOCS: {obs_locs}")
     for loc in obs_locs:
         obs = map.grid_loc_to_world_coords_corner(loc)
         patch = patches.Rectangle(

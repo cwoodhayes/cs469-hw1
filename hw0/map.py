@@ -17,7 +17,7 @@ class Map:
     Map of the world in a grid form
     """
 
-    @dataclass(frozen=True)
+    @dataclass
     class Config:
         """
         :param dimensions: dimensions of the map in meters [[xmin, xmax], [ymin, ymax]]
@@ -125,6 +125,7 @@ class Map:
         """
         for obs in obstacles:
             row, col = self.world_coords_to_grid_loc(obs)
+            self.grid[row, col] = 1
             write_square_kernel_with_clip(
                 self.grid, (row, col), self._obstacle_radius_idx, 1
             )
@@ -149,10 +150,15 @@ class Map:
     def get_goal_loc(self) -> tuple[int, int]:
         return self._goal_loc
 
-    def get_neighbors(self, loc: tuple[int, int]) -> set[tuple[int, int]]:
+    def get_neighbors(
+        self, loc: tuple[int, int], return_obstacles: bool = False
+    ) -> set[tuple[int, int]]:
         """
         Get all unoccupied neighbors of grid location "loc". This means they're on the grid,
         and they don't contain an obstacle
+
+        however, IF return_obstacles=True, return the obstacles instead of the free spaces.
+        (this is useful in copying obstacles from one map to another)
         """
         neighbors = set()
         for xdiff in (-1, 0, 1):
@@ -165,8 +171,13 @@ class Map:
                 if neighbor[1] < 0 or neighbor[1] >= self.grid.shape[1]:  # type: ignore
                     continue
                 val = self.grid[neighbor]
-                if val != 1:
-                    neighbors.add(neighbor)
+
+                if return_obstacles:
+                    if val == 1:
+                        neighbors.add(neighbor)
+                else:
+                    if val != 1:
+                        neighbors.add(neighbor)
         return neighbors
 
     @classmethod
@@ -182,40 +193,3 @@ class Map:
         ]
 
         return cls(config, obstacles)
-
-
-class WorldObstacles:
-    def __init__(self, all_obstacles: list[np.ndarray]) -> None:
-        self._obstacles = all_obstacles
-
-    def obstacles_within_radius(
-        self, radius: float, my_coord: np.ndarray
-    ) -> list[np.ndarray]:
-        """
-        Find all obstacles within a given radius of a world coordinate
-
-        :param radius: distance in meters
-        :param my_coord: robot location in world coordinates
-        :rtype: subset of the obstacle list within the radius
-        """
-        # this is a good place to optimize if runtime is slow
-        # not overthinking it for the first pass
-        out = [
-            obs_coord
-            for obs_coord in self._obstacles
-            if np.linalg.norm(my_coord - obs_coord) <= radius
-        ]
-        return out
-
-    def obstacles_within_radius_loc(
-        self, map: Map, radius: float, my_loc: np.ndarray
-    ) -> list[np.ndarray]:
-        """
-        Find all obstacles within a radius of a given grid location.
-        Measures from the center of the grid cell
-        """
-        # measure from the center of the grid cell
-        corner = map.grid_loc_to_world_coords_corner(my_loc)
-        dist = map.c.cell_size / 2
-        center = np.array(((corner[0] + dist), (corner[1] - dist)))
-        return self.obstacles_within_radius(radius, center)

@@ -12,7 +12,7 @@ def write_square_kernel_with_clip(
     """
     Write val in a square kernel to the destination array, ignoring any
     indices that are out of bounds of dest.
-    center is always written with val
+    radius=0 means a single value is written, radius=1 means a 3x3 box is written, etc
 
     :param dest: NxM destination to write to
     :param center: (row, col)
@@ -20,8 +20,7 @@ def write_square_kernel_with_clip(
     :param val: any value of dest's dtype
     """
 
-    xlim = (max(0, center[0] - radius), min(dest.shape[0], center[0] + radius))
-    ylim = (max(0, center[1] - radius), min(dest.shape[1], center[1] + radius))
+    xlim = (max(0, center[0] - radius), min(dest.shape[0], center[0] + radius + 1))
+    ylim = (max(0, center[1] - radius), min(dest.shape[1], center[1] + radius + 1))
 
     dest[xlim[0] : xlim[1], ylim[0] : ylim[1]] = val
-    dest[center] = val

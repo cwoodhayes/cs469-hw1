@@ -5,10 +5,12 @@ in this case, this just means that I run offline A* once every step
 & hide the obstacles until i'm close to them.
 """
 
+from copy import copy
+
 import numpy as np
 from hw0.astar import AStar, Node, Path
 from hw0.data import Dataset
-from hw0.map import Map, WorldObstacles
+from hw0.map import Map
 
 
 def run_astar_online(ds: Dataset, cfg: Map.Config) -> tuple[Path, Map]:
@@ -22,7 +24,12 @@ def run_astar_online(ds: Dataset, cfg: Map.Config) -> tuple[Path, Map]:
     :return: the Path the robot took, and the Map it discovered
     """
 
-    map = Map(cfg, [])
+    robot_map_cfg = copy(cfg)
+    # the actual robot map has an obstacle radius of 0.
+    # it just checks against a precomputed ground-truth map with the
+    # correct obstacle radius.
+    robot_map_cfg.obstacle_radius = 0.0
+    map = Map(robot_map_cfg, [])
     algo = AStar()
     path = Path()
 
@@ -30,17 +37,16 @@ def run_astar_online(ds: Dataset, cfg: Map.Config) -> tuple[Path, Map]:
     all_obstacles = [
         np.array((x, y)) for x, y in zip(ds.landmarks["x_m"], ds.landmarks["y_m"])
     ]
-    world_obs = WorldObstacles(all_obstacles)
+    gt_map = Map(cfg, all_obstacles)
 
     robot_loc = map.get_start_loc()
     path.nodes.append(Node(loc=robot_loc))
 
     while robot_loc != map.get_goal_loc():
-        # add any obstacles we can see to the map
-        obs_coords = world_obs.obstacles_within_radius_loc(
-            map, map.c.obstacle_radius + map.c.cell_size, robot_loc
-        )
-        map.add_obstacles(obs_coords)
+        # add any obstacles we can now see to the map (all neighboring obstacles
+        # in the ground-truth grid.)
+        obs_locs = gt_map.get_neighbors(robot_loc, return_obstacles=True)
+        map.add_obstacles(map.grid_loc_to_world_coords_corner(loc) for loc in obs_locs)
 
         # plan a path given our current knowledge
         p = algo.solve(map, robot_loc)
