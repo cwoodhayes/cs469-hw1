@@ -56,6 +56,17 @@ def test_idx_to_world_coord(idx, expected_coord, default_empty_map):
     np.testing.assert_allclose(coord, expected_coord)
 
 
+@pytest.mark.parametrize("world", [((0, 0)), ((2, 1)), (1.23, 1.59), ((-2, -6))])
+def test_roundtrip_coords(world, default_empty_map):
+    coord = np.array(world)
+    loc = default_empty_map.world_coords_to_grid_index(coord)
+    new_coord = default_empty_map.grid_index_to_world_coords_corner(loc)
+    new_loc = default_empty_map.world_coords_to_grid_index(new_coord)
+
+    assert loc[0] == new_loc[0]
+    assert loc[1] == new_loc[1]
+
+
 def test_map_from_ds():
     p = REPO_ROOT / "data/ds1"
     ds = Dataset.from_dataset_directory(p)
