@@ -4,9 +4,10 @@ import signal
 from matplotlib import pyplot as plt
 import numpy as np
 
+from hw0.astar import AStar
 from hw0.data import Dataset
 from hw0.map import Map
-from hw0.plot import plot_map
+from hw0.plot import plot_map, plot_path_on_map
 
 
 REPO_ROOT = pathlib.Path(__file__).parent
@@ -35,17 +36,21 @@ def q1(ds: Dataset):
                 [-6, 6],
             ]
         ),
-        cell_size=0.2,
+        cell_size=0.5,
         start=np.array([0.5, -1.5]),
         goal=np.array([0.5, 1.5]),
     )
 
     map = Map.construct_from_dataset(ds, cfg)
 
-    fig = plt.figure()
-    ax = fig.subplots()
+    algo = AStar()
+    path = algo.solve(map)
 
-    plot_map(map, ax)
+    fig = plt.figure()
+    axl, axr = fig.subplots(1, 2)
+
+    plot_map(map, axl)
+    plot_path_on_map(map, axr, path)
     plt.show()
 
 

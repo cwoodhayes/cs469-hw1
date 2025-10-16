@@ -37,10 +37,8 @@ class Map:
         :param obstacles: Nx2 array of obstacles, where each row is an (x,y) location of an obstacle in world coords
         """
         self.c = config
-        dim = np.array(config.dimensions)
-        self._dim = dim
+        dim = self.c.dimensions
         self._world_mins = dim[:, 0]
-        self._cell_size = config.cell_size
         x_range = dim[0, 1] - dim[0, 0]
         y_range = dim[1, 1] - dim[1, 0]
         range = np.array([y_range, x_range])
@@ -57,10 +55,10 @@ class Map:
         self._obstacles = []
 
         self.add_obstacles(obstacles)
-        start_loc = self.world_coords_to_grid_index(config.start)
-        goal_loc = self.world_coords_to_grid_index(config.goal)
-        self.grid[start_loc] = 2
-        self.grid[goal_loc] = 3
+        self._start_loc = self.world_coords_to_grid_index(config.start)
+        self._goal_loc = self.world_coords_to_grid_index(config.goal)
+        self.grid[self._start_loc] = 2
+        self.grid[self._goal_loc] = 3
 
     def world_coords_to_grid_index(self, coord: np.ndarray) -> tuple[int, int]:
         """
@@ -72,9 +70,25 @@ class Map:
         :rtype: tuple[int, int]
         """
         # todo check for invalid input
-        rounds = (coord / self._cell_size - self._world_mins).round().astype(int)
+        rounds = (coord / self.c.cell_size - self._world_mins).round().astype(int)
         loc = (rounds[1], rounds[0])
         return loc
+
+    def grid_index_to_world_coords_corner(
+        self, loc: tuple[int, int] | np.ndarray
+    ) -> np.ndarray:
+        """
+        Convert grid index (row, col) of a cell into the world coordinates
+        of that cell's top left corner.
+
+        :param loc: grid index (row, col)
+        :type loc: tuple[int, int] | np.ndarray
+        :return: world coordinate (x,y)
+        """
+        # convert to ()
+        arr = np.array((loc[1], loc[0]))
+        coord = arr * self.c.cell_size + self._world_mins
+        return coord
 
     def add_obstacles(self, obstacles: list[np.ndarray]) -> None:
         """
@@ -88,11 +102,14 @@ class Map:
             self.grid[row, col] = 1
             self._obstacles.append(obs)
 
-    def get_dim(self) -> np.ndarray:
-        return self._dim
-
     def get_obstacles(self) -> list[np.ndarray]:
         return self._obstacles
+
+    def get_start_loc(self) -> tuple[int, int]:
+        return self._start_loc
+
+    def get_goal_loc(self) -> tuple[int, int]:
+        return self._goal_loc
 
     @classmethod
     def construct_from_dataset(cls, ds: Dataset, config: Config) -> Map:

@@ -12,6 +12,7 @@ import pandas as pd
 
 from hw0.data import Dataset
 from hw0.map import Map
+from hw0 import astar
 
 
 def plot_trajectories_pretty(
@@ -225,8 +226,8 @@ def plot_map(map: Map, ax: Axes) -> None:
     )
 
     ##### Make legend and grid
-    xlim = map.get_dim()[0, :]
-    ylim = map.get_dim()[1, :]
+    xlim = map.c.dimensions[0, :]
+    ylim = map.c.dimensions[1, :]
     ax.set_xlim(*xlim)
     ax.set_ylim(*ylim)
 
@@ -242,3 +243,18 @@ def plot_map(map: Map, ax: Axes) -> None:
         loc="center left",
         bbox_to_anchor=(0.8, 0.95),
     )
+
+
+def plot_path_on_map(map: Map, ax: Axes, p: astar.Path) -> None:
+    plot_map(map, ax)
+
+    # plunk a dot down in the middle of every cell visited
+    centers = []
+    for loc in p.locs:
+        corner = map.grid_index_to_world_coords_corner(loc)
+        coord = corner + map.c.cell_size / 2
+        centers.append(coord)
+
+    c_arr = np.array(centers)
+
+    ax.plot(c_arr[:, 0], c_arr[:, 1], "bo", label="Robot Path")
