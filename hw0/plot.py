@@ -194,6 +194,37 @@ def _plot_trajectory(
 
 
 def plot_map(map: Map, ax: Axes) -> None:
+    ##### Plot the obstacles
+    for obs in map.get_obstacles():
+        corner = np.floor(obs / map.c.cell_size) * map.c.cell_size
+        ax.add_patch(
+            patches.Rectangle(corner, map.c.cell_size, map.c.cell_size, color="black")  # type: ignore
+        )
+    obs_proxy = patches.Patch(facecolor="black", label="Obstacles")
+
+    ##### Plot start and goal
+    goal_corner = np.floor(map.c.goal / map.c.cell_size) * map.c.cell_size
+    start_corner = np.floor(map.c.start / map.c.cell_size) * map.c.cell_size
+    ax.add_patch(
+        patches.Rectangle(
+            goal_corner,  # type: ignore
+            map.c.cell_size,
+            map.c.cell_size,
+            color="#FFD90099",
+            label="Goal",
+        )
+    )
+    ax.add_patch(
+        patches.Rectangle(
+            start_corner,  # type: ignore
+            map.c.cell_size,
+            map.c.cell_size,
+            color="#00FF5599",
+            label="Start",
+        )
+    )
+
+    ##### Make legend and grid
     xlim = map.get_dim()[0, :]
     ylim = map.get_dim()[1, :]
     ax.set_xlim(*xlim)
@@ -202,14 +233,6 @@ def plot_map(map: Map, ax: Axes) -> None:
     ax.grid(True)
     ax.xaxis.set_major_locator(MultipleLocator(1))
     ax.yaxis.set_major_locator(MultipleLocator(1))
-
-    for obs in map.get_obstacles():
-        corner = np.floor(obs / map.c.cell_size) * map.c.cell_size
-        ax.add_patch(
-            patches.Rectangle(corner, map.c.cell_size, map.c.cell_size, color="black")  # type: ignore
-        )
-
-    obs_proxy = patches.Patch(facecolor="black", label="Obstacles")
 
     ax.legend(
         handles=[obs_proxy] + ax.get_legend_handles_labels()[0],
