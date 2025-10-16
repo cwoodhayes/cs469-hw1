@@ -7,6 +7,8 @@ from collections import defaultdict, deque
 from dataclasses import dataclass, field
 import heapq
 
+import numpy as np
+
 from hw0.map import Map
 
 

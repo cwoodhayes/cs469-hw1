@@ -110,3 +110,30 @@ def test_map_from_ds():
     map = Map.construct_from_dataset(ds, cfg)
 
     assert np.sum(map.grid == 1) == len(ds.landmarks)
+
+    assert len(map.get_obstacle_locs()) == len(ds.landmarks)
+
+
+def test_map_from_ds_radius():
+    p = REPO_ROOT / "data/ds1"
+    ds = Dataset.from_dataset_directory(p)
+
+    cfg = Map.Config(
+        np.array(
+            [
+                [-2, 5],
+                [-6, 6],
+            ]
+        ),
+        0.1,
+        np.array([0.5, -1.5]),
+        np.array([0.5, 1.5]),
+        0.3,
+    )
+
+    map = Map.construct_from_dataset(ds, cfg)
+
+    # each obstacle is 3x3, so:
+    assert len(map.get_obstacles()) == len(ds.landmarks)
+    assert np.sum(map.grid == 1) == len(ds.landmarks) * 9
+    assert len(map.get_obstacle_locs()) == len(ds.landmarks) * 9

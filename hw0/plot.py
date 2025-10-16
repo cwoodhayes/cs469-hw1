@@ -197,10 +197,12 @@ def _plot_trajectory(
 def plot_map(map: Map, ax: Axes, groundtruth_map: Map | None = None) -> None:
     ##### Plot the obstacles
     patch = None
-    for obs in map.get_obstacles():
-        corner = map.world_coords_to_corner(obs)
+    obs_locs = map.get_obstacle_locs()
+    print(f"OBJ LOCS: {obs_locs}")
+    for loc in obs_locs:
+        obs = map.grid_loc_to_world_coords_corner(loc)
         patch = patches.Rectangle(
-            corner,  # type: ignore
+            obs,  # type: ignore
             map.c.cell_size,
             -map.c.cell_size,
             color="black",
@@ -212,10 +214,11 @@ def plot_map(map: Map, ax: Axes, groundtruth_map: Map | None = None) -> None:
     ### If supplied, plot ground-truth obstacles behind those in light grey
     if groundtruth_map is not None:
         patch = None
-        for obs in groundtruth_map.get_obstacles():
-            corner = map.world_coords_to_corner(obs)
+        obs_locs = groundtruth_map.get_obstacle_locs()
+        for loc in obs_locs:
+            obs = map.grid_loc_to_world_coords_corner(loc)
             patch = patches.Rectangle(
-                corner,  # type: ignore
+                obs,  # type: ignore
                 map.c.cell_size,
                 -map.c.cell_size,
                 color="#00000037",

@@ -59,7 +59,6 @@ class Map:
         self.grid = np.zeros(shape=shape_int, dtype=int)
         # maintain these lists mostly for plotting
         self._obstacles = list()
-        self._obstacle_locs = set()
         self._obstacle_radius_idx = round(self.c.obstacle_radius / self.c.cell_size)
 
         self.add_obstacles(obstacles)
@@ -131,20 +130,18 @@ class Map:
             )
 
             self._obstacles.append(obs)
-            self._obstacle_locs.add((row, col))
 
     def get_obstacles(self) -> list[np.ndarray]:
         """
         Returns all obstacle anchor points (centers) in world-coordinates
-
-        :param self: Description
-        :return: Description
-        :rtype: list[ndarray[_AnyShape, dtype[Any]]]
         """
         return self._obstacles
 
-    def get_obstacle_locs(self) -> set[tuple[int, int]]:
-        return self._obstacle_locs
+    def get_obstacle_locs(self) -> np.ndarray:
+        """
+        :return: Nx2 array of grid locations.
+        """
+        return np.argwhere(self.grid == 1)
 
     def get_start_loc(self) -> tuple[int, int]:
         return self._start_loc
@@ -185,3 +182,40 @@ class Map:
         ]
 
         return cls(config, obstacles)
+
+
+class WorldObstacles:
+    def __init__(self, all_obstacles: list[np.ndarray]) -> None:
+        self._obstacles = all_obstacles
+
+    def obstacles_within_radius(
+        self, radius: float, my_coord: np.ndarray
+    ) -> list[np.ndarray]:
+        """
+        Find all obstacles within a given radius of a world coordinate
+
+        :param radius: distance in meters
+        :param my_coord: robot location in world coordinates
+        :rtype: subset of the obstacle list within the radius
+        """
+        # this is a good place to optimize if runtime is slow
+        # not overthinking it for the first pass
+        out = [
+            obs_coord
+            for obs_coord in self._obstacles
+            if np.linalg.norm(my_coord - obs_coord) <= radius
+        ]
+        return out
+
+    def obstacles_within_radius_loc(
+        self, map: Map, radius: float, my_loc: np.ndarray
+    ) -> list[np.ndarray]:
+        """
+        Find all obstacles within a radius of a given grid location.
+        Measures from the center of the grid cell
+        """
+        # measure from the center of the grid cell
+        corner = map.grid_loc_to_world_coords_corner(my_loc)
+        dist = map.c.cell_size / 2
+        center = np.array(((corner[0] + dist), (corner[1] - dist)))
+        return self.obstacles_within_radius(radius, center)
