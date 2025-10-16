@@ -11,7 +11,9 @@ from hw0.data import Dataset
 from hw0.map import Map
 
 
-def run_astar_online(ds: Dataset, cfg: Map.Config) -> tuple[Path, Map]:
+def run_astar_online(
+    ds: Dataset, cfg: Map.Config, obstacle_radius: float | None = None
+) -> tuple[Path, Map]:
     """
     Run A* "online", such that:
     - we can only see obstacles when we are adjacent to them, and start out

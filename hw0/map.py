@@ -32,6 +32,9 @@ class Map:
         start: np.ndarray
         goal: np.ndarray
 
+        obstacle_radius: float | None = None
+        # radius is only relevant for q7 and above
+
     def __init__(self, config: Config, obstacles: list[np.ndarray]) -> None:
         """
         :param config: configuration for the map
@@ -122,10 +125,18 @@ class Map:
         for obs in obstacles:
             row, col = self.world_coords_to_grid_loc(obs)
             self.grid[row, col] = 1
+
             self._obstacles.append(obs)
             self._obstacle_locs.add((row, col))
 
     def get_obstacles(self) -> list[np.ndarray]:
+        """
+        Returns all
+
+        :param self: Description
+        :return: Description
+        :rtype: list[ndarray[_AnyShape, dtype[Any]]]
+        """
         return self._obstacles
 
     def get_obstacle_locs(self) -> set[tuple[int, int]]:
