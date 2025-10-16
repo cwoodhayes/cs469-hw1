@@ -56,7 +56,15 @@ def test_idx_to_world_coord(idx, expected_coord, default_empty_map):
     np.testing.assert_allclose(coord, expected_coord)
 
 
-@pytest.mark.parametrize("world", [((0, 0)), ((2, 1)), (1.23, 1.59), ((-2, -6))])
+@pytest.mark.parametrize(
+    "world",
+    [
+        ((0, 0)),
+        ((2, 1)),
+        (1.23, 1.59),
+        ((-2, -6)),
+    ],
+)
 def test_roundtrip_coords(world, default_empty_map):
     coord = np.array(world)
     loc = default_empty_map.world_coords_to_grid_index(coord)
@@ -65,6 +73,19 @@ def test_roundtrip_coords(world, default_empty_map):
 
     assert loc[0] == new_loc[0]
     assert loc[1] == new_loc[1]
+
+
+@pytest.mark.parametrize(
+    "loc,neighbors",
+    [
+        ((0, 0), ((0, 1), (1, 0), (1, 1))),
+        ((2, 1), ((1, 0), (1, 1), (1, 2), (2, 0), (2, 2), (3, 0), (3, 1), (3, 2))),
+    ],
+)
+def test_get_neighbors(loc, neighbors, default_empty_map):
+    map = default_empty_map
+    n = set(neighbors)
+    assert map.get_neighbors(loc) == n
 
 
 def test_map_from_ds():

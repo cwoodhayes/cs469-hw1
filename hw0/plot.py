@@ -256,8 +256,9 @@ def plot_path_on_map(map: Map, ax: Axes, p: astar.Path) -> None:
     centers = []
     for loc in p.locs:
         corner = map.grid_index_to_world_coords_corner(loc)
-        coord = corner + map.c.cell_size / 2
-        centers.append(coord)
+        center_x = corner[0] + map.c.cell_size / 2
+        center_y = corner[1] - map.c.cell_size / 2
+        centers.append((center_x, center_y))
 
     c_arr = np.array(centers)
 

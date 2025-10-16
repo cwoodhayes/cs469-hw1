@@ -45,6 +45,7 @@ def q1(ds: Dataset):
 
     algo = AStar()
     path = algo.solve(map)
+    path.print()
 
     fig = plt.figure()
     axl, axr = fig.subplots(1, 2)

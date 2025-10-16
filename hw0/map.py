@@ -123,23 +123,24 @@ class Map:
     def get_goal_loc(self) -> tuple[int, int]:
         return self._goal_loc
 
-    def get_neighbors(self, loc: tuple[int, int]) -> list[tuple[int, int]]:
+    def get_neighbors(self, loc: tuple[int, int]) -> set[tuple[int, int]]:
         """
         Get all unoccupied neighbors of grid location "loc". This means they're on the grid,
         and they don't contain an obstacle
         """
-        neighbors = []
-        for xdiff in (-1, 1):
-            for ydiff in (-1, 1):
-                try:
-                    neighbor = (loc[0] + xdiff, loc[1] + ydiff)
-                    # if it's out of range, we get an index error here:
-                    val = self.grid[neighbor]
-
-                    if val != 1:
-                        neighbors.append(neighbor)
-                except IndexError:
+        neighbors = set()
+        for xdiff in (-1, 0, 1):
+            for ydiff in (-1, 0, 1):
+                neighbor = (loc[0] + xdiff, loc[1] + ydiff)
+                if neighbor == loc:
                     continue
+                if neighbor[0] < 0 or neighbor[0] >= self.grid.shape[0]:
+                    continue
+                if neighbor[1] < 0 or neighbor[1] > self.grid.shape[1]:  # type: ignore
+                    continue
+                val = self.grid[neighbor]
+                if val != 1:
+                    neighbors.add(neighbor)
         return neighbors
 
     @classmethod

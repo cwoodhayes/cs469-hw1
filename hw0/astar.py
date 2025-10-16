@@ -37,6 +37,12 @@ class Path:
     def locs(self) -> list[np.ndarray]:
         return [np.array(n.loc) for n in self.nodes]
 
+    def print(self) -> None:
+        print("\n~~~~~~~~~~~~~\nPATH:")
+        for loc in self.locs:
+            print(loc)
+        print("~~~~~~~~~~~~~~~")
+
 
 class AStar:
     """
@@ -113,13 +119,14 @@ class AStar:
                 n = Node(neighbor_loc)
                 # print(f"NEIGHBOR: {n}")
                 if new_gscore < g_score[n]:
-                    print(f"ADDING: {n}")
                     # this path to n is better than any previous one. record it
                     came_from[n] = current
                     g_score[n] = new_gscore
                     n.f_score = new_gscore + self.heuristic(map, n.loc)
                     f_score[n] = n.f_score
+
                     if n not in openset:
+                        print(f"----- ADDING: {n}")
                         heapq.heappush(openset, n)
 
         # failure--there's no path to the goal
