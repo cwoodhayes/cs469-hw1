@@ -107,7 +107,7 @@ class AStar:
 
         while len(openset) > 0:
             current = heapq.heappop(openset)
-            print(f"CURRENT: {current}")
+            # print(f"CURRENT: {current}")
 
             if current.loc == gloc:
                 return self.reconstruct_path(came_from, current)
@@ -117,7 +117,6 @@ class AStar:
                 # our edge weights are all 1, since get_neighbors ignores obstacles.
                 new_gscore = g_score[current] + 1
                 n = Node(neighbor_loc)
-                # print(f"NEIGHBOR: {n}")
                 if new_gscore < g_score[n]:
                     # this path to n is better than any previous one. record it
                     came_from[n] = current
@@ -126,7 +125,7 @@ class AStar:
                     f_score[n] = n.f_score
 
                     if n not in openset:
-                        print(f"----- ADDING: {n}")
+                        # print(f"----- ADDING: {n}")
                         heapq.heappush(openset, n)
 
         # failure--there's no path to the goal

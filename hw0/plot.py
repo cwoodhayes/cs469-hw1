@@ -198,11 +198,11 @@ def plot_map(map: Map, ax: Axes) -> None:
     ##### Plot the obstacles
     patch = None
     for obs in map.get_obstacles():
-        corner = np.floor(obs / map.c.cell_size) * map.c.cell_size
+        corner = map.world_coords_to_corner(obs)
         patch = patches.Rectangle(
             corner,  # type: ignore
             map.c.cell_size,
-            map.c.cell_size,
+            -map.c.cell_size,
             color="black",
         )
         ax.add_patch(patch)
@@ -210,13 +210,13 @@ def plot_map(map: Map, ax: Axes) -> None:
         patch.set_label("Obstacle")
 
     ##### Plot start and goal
-    goal_corner = np.floor(map.c.goal / map.c.cell_size) * map.c.cell_size
-    start_corner = np.floor(map.c.start / map.c.cell_size) * map.c.cell_size
+    goal_corner = map.grid_loc_to_world_coords_corner(map._goal_loc)
+    start_corner = map.grid_loc_to_world_coords_corner(map._start_loc)
     ax.add_patch(
         patches.Rectangle(
             goal_corner,  # type: ignore
             map.c.cell_size,
-            map.c.cell_size,
+            -map.c.cell_size,
             color="#FFD90099",
             label="Goal",
         )
@@ -225,7 +225,7 @@ def plot_map(map: Map, ax: Axes) -> None:
         patches.Rectangle(
             start_corner,  # type: ignore
             map.c.cell_size,
-            map.c.cell_size,
+            -map.c.cell_size,
             color="#00FF5599",
             label="Start",
         )
@@ -255,7 +255,7 @@ def plot_path_on_map(map: Map, ax: Axes, p: astar.Path) -> None:
     # plunk a dot down in the middle of every cell visited
     centers = []
     for loc in p.locs:
-        corner = map.grid_index_to_world_coords_corner(loc)
+        corner = map.grid_loc_to_world_coords_corner(loc)
         center_x = corner[0] + map.c.cell_size / 2
         center_y = corner[1] - map.c.cell_size / 2
         centers.append((center_x, center_y))

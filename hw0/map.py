@@ -56,12 +56,14 @@ class Map:
         self._obstacles = []
 
         self.add_obstacles(obstacles)
-        self._start_loc = self.world_coords_to_grid_index(config.start)
-        self._goal_loc = self.world_coords_to_grid_index(config.goal)
+        self._start_loc = self.world_coords_to_grid_loc(config.start)
+        self._goal_loc = self.world_coords_to_grid_loc(config.goal)
+        print(f"START: {self._start_loc}")
+        print(f"GOAL: {self._goal_loc}")
         self.grid[self._start_loc] = 2
         self.grid[self._goal_loc] = 3
 
-    def world_coords_to_grid_index(self, coord: np.ndarray) -> tuple[int, int]:
+    def world_coords_to_grid_loc(self, coord: np.ndarray) -> tuple[int, int]:
         """
         Convert world coordinates (as [x,y]) into grid indices (row,col) of the cell containing that location
 
@@ -87,7 +89,7 @@ class Map:
         )
         return (row, col)
 
-    def grid_index_to_world_coords_corner(
+    def grid_loc_to_world_coords_corner(
         self, loc: tuple[int, int] | np.ndarray
     ) -> np.ndarray:
         """
@@ -102,6 +104,14 @@ class Map:
         y = self.c.dimensions[1, 1] - (loc[0] * self.c.cell_size)
         return np.array((x, y))
 
+    def world_coords_to_corner(self, coord: np.ndarray) -> np.ndarray:
+        """
+        convenience method for plotting. returns the top left corner of the cell
+        containing "coord", in world coordinates.
+        """
+        loc = self.world_coords_to_grid_loc(coord)
+        return self.grid_loc_to_world_coords_corner(loc)
+
     def add_obstacles(self, obstacles: list[np.ndarray]) -> None:
         """
         Add a set of obstacles to the map.
@@ -110,7 +120,7 @@ class Map:
         :param obstacles: Nx2 list of obstacles, where each row is an (x,y) location of an obstacle in world coords
         """
         for obs in obstacles:
-            row, col = self.world_coords_to_grid_index(obs)
+            row, col = self.world_coords_to_grid_loc(obs)
             self.grid[row, col] = 1
             self._obstacles.append(obs)
 
