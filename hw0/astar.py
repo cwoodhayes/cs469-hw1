@@ -7,8 +7,6 @@ from collections import defaultdict, deque
 from dataclasses import dataclass, field
 import heapq
 
-import numpy as np
-
 from hw0.map import Map
 
 
@@ -34,8 +32,8 @@ class Path:
     """nodes in a path from start to goal. uses deque cuz i have to prepend"""
 
     @property
-    def locs(self) -> list[np.ndarray]:
-        return [np.array(n.loc) for n in self.nodes]
+    def locs(self) -> list[tuple[int, int]]:
+        return [n.loc for n in self.nodes]
 
     def print(self) -> None:
         print("\n~~~~~~~~~~~~~\nPATH:")
@@ -80,17 +78,19 @@ class AStar:
 
         return p
 
-    def solve(self, map: Map) -> Path:
+    def solve(self, map: Map, sloc: tuple[int, int] | None = None) -> Path:
         """
         Given a grid map, a goal G, and a start S, plan a path
         through the grid.
 
         :param map: map of the world from the robot's perspective
+        :param sloc: start location override. defaults to S from the map.
         :return: path from S to G
         """
         # start & end nodes
         gloc = map.get_goal_loc()
-        sloc = map.get_start_loc()
+        if sloc is None:
+            sloc = map.get_start_loc()
         start = Node(
             loc=sloc,
             f_score=self.heuristic(map, sloc),

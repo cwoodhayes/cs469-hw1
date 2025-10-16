@@ -4,6 +4,7 @@ Map of the world according to the robot, represented in world coordinates
 
 from __future__ import annotations
 from dataclasses import dataclass
+from typing import Iterable
 
 import numpy as np
 
@@ -52,8 +53,9 @@ class Map:
             )
 
         self.grid = np.zeros(shape=shape_int, dtype=int)
-        # maintain this list mostly for debugging
-        self._obstacles = []
+        # maintain these lists mostly for plotting
+        self._obstacles = list()
+        self._obstacle_locs = set()
 
         self.add_obstacles(obstacles)
         self._start_loc = self.world_coords_to_grid_loc(config.start)
@@ -110,7 +112,7 @@ class Map:
         loc = self.world_coords_to_grid_loc(coord)
         return self.grid_loc_to_world_coords_corner(loc)
 
-    def add_obstacles(self, obstacles: list[np.ndarray]) -> None:
+    def add_obstacles(self, obstacles: Iterable[np.ndarray]) -> None:
         """
         Add a set of obstacles to the map.
         (we only ever add them, we never remove)
@@ -121,9 +123,13 @@ class Map:
             row, col = self.world_coords_to_grid_loc(obs)
             self.grid[row, col] = 1
             self._obstacles.append(obs)
+            self._obstacle_locs.add((row, col))
 
     def get_obstacles(self) -> list[np.ndarray]:
         return self._obstacles
+
+    def get_obstacle_locs(self) -> set[tuple[int, int]]:
+        return self._obstacle_locs
 
     def get_start_loc(self) -> tuple[int, int]:
         return self._start_loc
