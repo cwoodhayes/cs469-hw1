@@ -58,7 +58,6 @@ class Map:
 
         self.grid = np.zeros(shape=shape_int, dtype=int)
         # maintain these lists mostly for plotting
-        self._obstacles = list()
         self._obstacle_radius_idx = round(self.c.obstacle_radius / self.c.cell_size)
 
         self.add_obstacles(obstacles)
@@ -130,13 +129,17 @@ class Map:
                 self.grid, (row, col), self._obstacle_radius_idx, 1
             )
 
-            self._obstacles.append(obs)
+    def add_obstacle_locs(self, obstacles: Iterable[tuple[int, int]]) -> None:
+        """
+        Add a set of obstacles to the map via their grid locations
 
-    def get_obstacles(self) -> list[np.ndarray]:
+        :param obstacles: Nx2 list of obstacles, where each row is an (x,y) location of an obstacle in world coords
         """
-        Returns all obstacle anchor points (centers) in world-coordinates
-        """
-        return self._obstacles
+        for row, col in obstacles:
+            self.grid[row, col] = 1
+            write_square_kernel_with_clip(
+                self.grid, (row, col), self._obstacle_radius_idx, 1
+            )
 
     def get_obstacle_locs(self) -> np.ndarray:
         """

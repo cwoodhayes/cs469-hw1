@@ -46,7 +46,7 @@ def run_astar_online(ds: Dataset, cfg: Map.Config) -> tuple[Path, Map]:
         # add any obstacles we can now see to the map (all neighboring obstacles
         # in the ground-truth grid.)
         obs_locs = gt_map.get_neighbors(robot_loc, return_obstacles=True)
-        map.add_obstacles(map.grid_loc_to_world_coords_corner(loc) for loc in obs_locs)
+        map.add_obstacle_locs(obs_locs)
 
         # plan a path given our current knowledge
         p = algo.solve(map, robot_loc)

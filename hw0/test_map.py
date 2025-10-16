@@ -134,6 +134,5 @@ def test_map_from_ds_radius():
     map = Map.construct_from_dataset(ds, cfg)
 
     # each obstacle is (3+1+3)^2 =49 squares, and none of them go off the map, so:
-    assert len(map.get_obstacles()) == len(ds.landmarks)
     assert np.sum(map.grid == 1) == len(ds.landmarks) * 49
     assert len(map.get_obstacle_locs()) == len(ds.landmarks) * 49
