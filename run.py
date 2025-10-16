@@ -2,6 +2,7 @@ import pathlib
 import signal
 
 from matplotlib import pyplot as plt
+from matplotlib.axes import Axes
 import numpy as np
 
 from hw0.astar import AStar
@@ -23,35 +24,42 @@ def main():
     # my assigned dataset is ds1, so I'm hardcoding this
     ds = Dataset.from_dataset_directory(REPO_ROOT / "data/ds1")
 
-    q1(ds)
+    q3(ds)
 
 
-def q1(ds: Dataset):
-    print("Question 1:")
+def q3(ds: Dataset):
+    print("Part A, Question 3:")
 
-    cfg = Map.Config(
-        dimensions=np.array(
-            [
-                [-2, 5],
-                [-6, 6],
-            ]
-        ),
-        cell_size=1.0,
-        start=np.array([0.5, -1.5]),
-        goal=np.array([0.5, 1.5]),
-    )
-
-    map = Map.construct_from_dataset(ds, cfg)
-
-    algo = AStar()
-    path = algo.solve(map)
-    path.print()
+    starts = [(0.5, -1.5), (4.5, 3.5), (-0.5, 5.5)]
+    goals = [(0.5, 1.5), (4.5, -1.5), (1.5, -3.5)]
+    paths = []
 
     fig = plt.figure()
-    axl, axr = fig.subplots(1, 2)
+    axes: list[Axes] = fig.subplots(1, 3)
 
-    plot_map(map, axl)
-    plot_path_on_map(map, axr, path)
+    for start_loc, goal_loc, idx in zip(starts, goals, range(3)):
+        cfg = Map.Config(
+            dimensions=np.array(
+                [
+                    [-2, 5],
+                    [-6, 6],
+                ]
+            ),
+            cell_size=1.0,
+            start=np.array(start_loc),
+            goal=np.array(goal_loc),
+        )
+
+        map = Map.construct_from_dataset(ds, cfg)
+
+        algo = AStar()
+        path = algo.solve(map)
+        path.print()
+        paths.append(path)
+
+        plot_path_on_map(map, axes[idx], path)
+        axes[idx].set_title(f"S={start_loc}, G={goal_loc}")
+
     plt.show()
 
 

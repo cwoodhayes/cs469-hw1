@@ -58,8 +58,6 @@ class Map:
         self.add_obstacles(obstacles)
         self._start_loc = self.world_coords_to_grid_loc(config.start)
         self._goal_loc = self.world_coords_to_grid_loc(config.goal)
-        print(f"START: {self._start_loc}")
-        print(f"GOAL: {self._goal_loc}")
         self.grid[self._start_loc] = 2
         self.grid[self._goal_loc] = 3
 
@@ -146,7 +144,7 @@ class Map:
                     continue
                 if neighbor[0] < 0 or neighbor[0] >= self.grid.shape[0]:
                     continue
-                if neighbor[1] < 0 or neighbor[1] > self.grid.shape[1]:  # type: ignore
+                if neighbor[1] < 0 or neighbor[1] >= self.grid.shape[1]:  # type: ignore
                     continue
                 val = self.grid[neighbor]
                 if val != 1:
