@@ -123,6 +123,25 @@ class Map:
     def get_goal_loc(self) -> tuple[int, int]:
         return self._goal_loc
 
+    def get_neighbors(self, loc: tuple[int, int]) -> list[tuple[int, int]]:
+        """
+        Get all unoccupied neighbors of grid location "loc". This means they're on the grid,
+        and they don't contain an obstacle
+        """
+        neighbors = []
+        for xdiff in (-1, 1):
+            for ydiff in (-1, 1):
+                try:
+                    neighbor = (loc[0] + xdiff, loc[1] + ydiff)
+                    # if it's out of range, we get an index error here:
+                    val = self.grid[neighbor]
+
+                    if val != 1:
+                        neighbors.append(neighbor)
+                except IndexError:
+                    continue
+        return neighbors
+
     @classmethod
     def construct_from_dataset(cls, ds: Dataset, config: Config) -> Map:
         """
