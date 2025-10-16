@@ -54,7 +54,8 @@ def q5(ds: Dataset):
         path, map = run_astar_online(ds, cfg)
         path.print()
 
-        plot_path_on_map(map, axes[idx], path)
+        groundtruth_map = Map.construct_from_dataset(ds, cfg)
+        plot_path_on_map(map, axes[idx], path, groundtruth_map)
         axes[idx].set_title(f"S={start_loc}, G={goal_loc}")
 
     fig.suptitle("Online A* paths", fontsize=16, fontweight="bold")

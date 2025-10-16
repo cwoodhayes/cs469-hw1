@@ -194,7 +194,7 @@ def _plot_trajectory(
     )
 
 
-def plot_map(map: Map, ax: Axes) -> None:
+def plot_map(map: Map, ax: Axes, groundtruth_map: Map | None = None) -> None:
     ##### Plot the obstacles
     patch = None
     for obs in map.get_obstacles():
@@ -208,6 +208,21 @@ def plot_map(map: Map, ax: Axes) -> None:
         ax.add_patch(patch)
     if patch is not None:
         patch.set_label("Obstacle")
+
+    ### If supplied, plot ground-truth obstacles behind those in light grey
+    if groundtruth_map is not None:
+        patch = None
+        for obs in groundtruth_map.get_obstacles():
+            corner = map.world_coords_to_corner(obs)
+            patch = patches.Rectangle(
+                corner,  # type: ignore
+                map.c.cell_size,
+                -map.c.cell_size,
+                color="#00000037",
+            )
+            ax.add_patch(patch)
+        if patch is not None:
+            patch.set_label("Undiscovered Obstacle")
 
     ##### Plot start and goal
     goal_corner = map.grid_loc_to_world_coords_corner(map._goal_loc)
@@ -249,8 +264,19 @@ def plot_map(map: Map, ax: Axes) -> None:
     )
 
 
-def plot_path_on_map(map: Map, ax: Axes, p: astar.Path) -> None:
-    plot_map(map, ax)
+def plot_path_on_map(
+    map: Map,
+    ax: Axes,
+    p: astar.Path,
+    groundtruth_map: Map | None = None,
+) -> None:
+    """
+    plots the robot path discoverd by A* on the map.
+
+    if supplied, groundtruth_map supplies the obstacles that were
+    not discovered by the robot, which are displayed in grey
+    """
+    plot_map(map, ax, groundtruth_map)
 
     # plunk a dot down in the middle of every cell visited
     centers = []
