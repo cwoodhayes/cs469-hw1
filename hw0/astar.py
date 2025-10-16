@@ -67,6 +67,7 @@ class AStar:
     @staticmethod
     def reconstruct_path(came_from: dict[Node, Node], current: Node) -> Path:
         p = Path()
+        p.nodes.appendleft(current)
         while current in came_from.keys():
             current = came_from[current]
             p.nodes.appendleft(current)
@@ -79,7 +80,7 @@ class AStar:
         through the grid.
 
         :param map: map of the world from the robot's perspective
-        :return:
+        :return: path from S to G
         """
         # start & end nodes
         gloc = map.get_goal_loc()
@@ -90,25 +91,29 @@ class AStar:
         )
 
         # various maps & priority queues and such
-        openset: list[Node] = []
+        openset: list[Node] = [start]
         came_from: dict[Node, Node] = {}
         g_score: defaultdict[Node, float] = defaultdict(lambda: float("inf"))
-        g_score[start]
+        g_score[start] = 0
 
         f_score: defaultdict[Node, float] = defaultdict(lambda: float("inf"))
         f_score[start] = start.f_score
 
         while len(openset) > 0:
             current = heapq.heappop(openset)
+            print(f"CURRENT: {current}")
 
             if current.loc == gloc:
                 return self.reconstruct_path(came_from, current)
 
-            for neighbor_loc in map.get_neighbors(current.loc):
+            neighbor_locs = map.get_neighbors(current.loc)
+            for neighbor_loc in neighbor_locs:
                 # our edge weights are all 1, since get_neighbors ignores obstacles.
                 new_gscore = g_score[current] + 1
                 n = Node(neighbor_loc)
+                # print(f"NEIGHBOR: {n}")
                 if new_gscore < g_score[n]:
+                    print(f"ADDING: {n}")
                     # this path to n is better than any previous one. record it
                     came_from[n] = current
                     g_score[n] = new_gscore
@@ -117,5 +122,5 @@ class AStar:
                     if n not in openset:
                         heapq.heappush(openset, n)
 
-        # failure--there's no nodes here
+        # failure--there's no path to the goal
         return Path()

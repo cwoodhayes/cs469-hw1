@@ -196,12 +196,18 @@ def _plot_trajectory(
 
 def plot_map(map: Map, ax: Axes) -> None:
     ##### Plot the obstacles
+    patch = None
     for obs in map.get_obstacles():
         corner = np.floor(obs / map.c.cell_size) * map.c.cell_size
-        ax.add_patch(
-            patches.Rectangle(corner, map.c.cell_size, map.c.cell_size, color="black")  # type: ignore
+        patch = patches.Rectangle(
+            corner,  # type: ignore
+            map.c.cell_size,
+            map.c.cell_size,
+            color="black",
         )
-    obs_proxy = patches.Patch(facecolor="black", label="Obstacles")
+        ax.add_patch(patch)
+    if patch is not None:
+        patch.set_label("Obstacle")
 
     ##### Plot start and goal
     goal_corner = np.floor(map.c.goal / map.c.cell_size) * map.c.cell_size
@@ -238,8 +244,6 @@ def plot_map(map: Map, ax: Axes) -> None:
     ax.yaxis.set_major_locator(MultipleLocator(1))
 
     ax.legend(
-        handles=[obs_proxy] + ax.get_legend_handles_labels()[0],
-        labels=["Obstacles"] + ax.get_legend_handles_labels()[1],
         loc="center left",
         bbox_to_anchor=(0.8, 0.95),
     )
@@ -257,4 +261,9 @@ def plot_path_on_map(map: Map, ax: Axes, p: astar.Path) -> None:
 
     c_arr = np.array(centers)
 
-    ax.plot(c_arr[:, 0], c_arr[:, 1], "bo", label="Robot Path")
+    ax.plot(c_arr[:, 0], c_arr[:, 1], "bo-", label="Robot Path")
+
+    ax.legend(
+        loc="center left",
+        bbox_to_anchor=(0.8, 0.95),
+    )
