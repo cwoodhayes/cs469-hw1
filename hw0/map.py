@@ -41,6 +41,7 @@ class Map:
         self._world_mins = dim[:, 0]
         x_range = dim[0, 1] - dim[0, 0]
         y_range = dim[1, 1] - dim[1, 0]
+        # flip x, y to be row, col
         range = np.array([y_range, x_range])
 
         shape = range / config.cell_size
@@ -64,15 +65,27 @@ class Map:
         """
         Convert world coordinates (as [x,y]) into grid indices (row,col) of the cell containing that location
 
+        The grid locs are oriented such that the top left of the image is
+        0,0, and the bottom right is (max_y, max_x), so that if we look at the array
+        it is the same in layout as the xy coordinate plot
+
+        In other words, the column index increases in -y, and the row index increases
+        in +x
+
         :param coord: world coordinate in [x,y]
         :type coord: np.ndarray
         :return: grid indices [row, col]
         :rtype: tuple[int, int]
         """
         # todo check for invalid input
-        rounds = (coord / self.c.cell_size - self._world_mins).round().astype(int)
-        loc = (rounds[1], rounds[0])
-        return loc
+
+        row = np.floor((self.c.dimensions[1, 1] - coord[1]) / self.c.cell_size).astype(
+            int
+        )
+        col = np.floor((coord[0] - self.c.dimensions[0, 0]) / self.c.cell_size).astype(
+            int
+        )
+        return (row, col)
 
     def grid_index_to_world_coords_corner(
         self, loc: tuple[int, int] | np.ndarray
@@ -85,10 +98,9 @@ class Map:
         :type loc: tuple[int, int] | np.ndarray
         :return: world coordinate (x,y)
         """
-        # convert to ()
-        arr = np.array((loc[1], loc[0]))
-        coord = arr * self.c.cell_size + self._world_mins
-        return coord
+        x = self.c.dimensions[0, 0] + (loc[1] * self.c.cell_size)
+        y = self.c.dimensions[1, 1] - (loc[0] * self.c.cell_size)
+        return np.array((x, y))
 
     def add_obstacles(self, obstacles: list[np.ndarray]) -> None:
         """
