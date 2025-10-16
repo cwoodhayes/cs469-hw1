@@ -290,7 +290,11 @@ def plot_path_on_map(
 
     c_arr = np.array(centers)
 
-    ax.plot(c_arr[:, 0], c_arr[:, 1], "bo-", label="Robot Path")
+    ax.plot(c_arr[:, 0], c_arr[:, 1], "bo-", ms=4, label="Robot Path")
+
+    # add a single dot for start and goal colors (for when the grid cell is small)
+    ax.plot(c_arr[0, 0], c_arr[0, 1], marker="o", color="#00FF55", ms=10, zorder=1.1)
+    ax.plot(c_arr[-1, 0], c_arr[-1, 1], marker="o", color="#FFD900", ms=10, zorder=1.1)
 
     ax.legend(
         # loc="center left",
