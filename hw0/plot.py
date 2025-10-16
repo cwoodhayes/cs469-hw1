@@ -7,8 +7,8 @@ import numpy as np
 from matplotlib.axes import Axes
 from matplotlib import patches
 import matplotlib.pyplot as plt
+from matplotlib.ticker import MultipleLocator
 import pandas as pd
-import seaborn as sbs
 
 from hw0.data import Dataset
 from hw0.map import Map
@@ -200,12 +200,14 @@ def plot_map(map: Map, ax: Axes) -> None:
     ax.set_ylim(*ylim)
 
     ax.grid(True)
+    ax.xaxis.set_major_locator(MultipleLocator(1))
+    ax.yaxis.set_major_locator(MultipleLocator(1))
 
     for obs in map.get_obstacles():
-        loc = map.world_coords_to_grid_index(obs)
-        coord = map.grid_index_to_world_coord(loc)
-        coord_tuple = (coord[0], coord[1])
-        ax.add_patch(patches.Rectangle(coord_tuple, 2, 2, color="black"))
+        corner = np.floor(obs / map.c.cell_size) * map.c.cell_size
+        ax.add_patch(
+            patches.Rectangle(corner, map.c.cell_size, map.c.cell_size, color="black")  # type: ignore
+        )
 
     obs_proxy = patches.Patch(facecolor="black", label="Obstacles")
 
