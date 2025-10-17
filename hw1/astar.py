@@ -68,7 +68,7 @@ class AStar:
         """
         goal = map.get_goal_loc()
         dist = ((goal[0] - loc[0]) ** 2 + (goal[1] - loc[1]) ** 2) ** 0.5
-        return dist
+        return dist / map.c.cell_size
 
     @staticmethod
     def reconstruct_path(came_from: dict[Node, Node], current: Node) -> Path:
