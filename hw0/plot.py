@@ -260,11 +260,6 @@ def plot_map(map: Map, ax: Axes, groundtruth_map: Map | None = None) -> None:
     ax.xaxis.set_major_locator(MultipleLocator(1))
     ax.yaxis.set_major_locator(MultipleLocator(1))
 
-    ax.legend(
-        # loc="center left",
-        # bbox_to_anchor=(0.8, 0.95),
-    )
-
 
 def plot_path_on_map(
     map: Map,
@@ -295,8 +290,3 @@ def plot_path_on_map(
     # add a single dot for start and goal colors (for when the grid cell is small)
     ax.plot(c_arr[0, 0], c_arr[0, 1], marker="o", color="#00FF55", ms=10, zorder=1.1)
     ax.plot(c_arr[-1, 0], c_arr[-1, 1], marker="o", color="#FFD900", ms=10, zorder=1.1)
-
-    ax.legend(
-        # loc="center left",
-        # bbox_to_anchor=(0.8, 0.95),
-    )
