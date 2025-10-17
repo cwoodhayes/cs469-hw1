@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from hw0.data import Dataset
+from hw1.data import Dataset
 
 REPO_ROOT = Path(__file__).parent.parent
 

@@ -6,8 +6,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from hw0.data import Dataset
-from hw0.map import Map
+from hw1.data import Dataset
+from hw1.map import Map
 
 REPO_ROOT = Path(__file__).parent.parent
 

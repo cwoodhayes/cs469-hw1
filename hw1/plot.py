@@ -10,9 +10,9 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import MultipleLocator
 import pandas as pd
 
-from hw0.data import Dataset
-from hw0.map import Map
-from hw0 import astar
+from hw1.data import Dataset
+from hw1.map import Map
+from hw1 import astar
 
 
 def plot_trajectories_pretty(

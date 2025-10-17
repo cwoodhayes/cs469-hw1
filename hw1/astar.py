@@ -9,7 +9,7 @@ import heapq
 
 import numpy as np
 
-from hw0.map import Map
+from hw1.map import Map
 
 
 @dataclass(order=True)

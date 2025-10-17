@@ -3,7 +3,7 @@ tests for utils.py
 """
 
 import numpy as np
-from hw0 import utils
+from hw1 import utils
 
 
 def test_write_square_kernel():

@@ -9,11 +9,11 @@ from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 import numpy as np
 
-from hw0.astar import AStar
-from hw0.data import Dataset
-from hw0.map import Map
-from hw0.plot import plot_path_on_map
-from hw0.online_astar import run_astar_online
+from hw1.astar import AStar
+from hw1.data import Dataset
+from hw1.map import Map
+from hw1.plot import plot_path_on_map
+from hw1.online_astar import run_astar_online
 
 
 REPO_ROOT = pathlib.Path(__file__).parent

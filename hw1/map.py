@@ -8,8 +8,8 @@ from typing import Iterable
 
 import numpy as np
 
-from hw0.data import Dataset
-from hw0.utils import write_square_kernel_with_clip
+from hw1.data import Dataset
+from hw1.utils import write_square_kernel_with_clip
 
 
 class Map:

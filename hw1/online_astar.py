@@ -8,9 +8,9 @@ in this case, this just means that I run offline A* once every step
 from copy import copy
 
 import numpy as np
-from hw0.astar import AStar, Node, Path
-from hw0.data import Dataset
-from hw0.map import Map
+from hw1.astar import AStar, Node, Path
+from hw1.data import Dataset
+from hw1.map import Map
 
 
 def run_astar_online(ds: Dataset, cfg: Map.Config) -> tuple[Path, Map]:
