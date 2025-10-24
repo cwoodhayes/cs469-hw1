@@ -12,7 +12,7 @@ import numpy as np
 from hw1.astar import AStar
 from hw1.data import Dataset
 from hw1.map import Map
-from hw1.plot import plot_path_on_map
+from hw1.plot import plot_path_on_map, plot_trajectory_over_waypoints
 from hw1.online_astar import run_astar_online
 
 
@@ -29,11 +29,31 @@ def main():
     # my assigned dataset is ds1, so I'm hardcoding this
     ds = Dataset.from_dataset_directory(REPO_ROOT / "data/ds1")
 
-    q3(ds)
-    q5(ds)
-    q7(ds)
+    # q3(ds)
+    # q5(ds)
+    # q7(ds)
+    q8(ds)
 
     plt.show()
+
+
+def q8(ds: Dataset) -> None:
+    # simulate our controller over some basic points
+    sample_waypoints = np.array(
+        [
+            [0, 0],
+            [5, 5],
+            [10, 0],
+            [12, 9],
+            [0, 0],
+        ]
+    )
+
+    fig = plt.figure(figsize=(10, 6))
+    ax = fig.subplots(1, 1)
+    plot_trajectory_over_waypoints(
+        ax, np.array([[0, 0], [1, 1], [2, 0]]), sample_waypoints
+    )
 
 
 def q7(ds: Dataset):

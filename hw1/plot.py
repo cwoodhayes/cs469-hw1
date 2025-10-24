@@ -290,3 +290,21 @@ def plot_path_on_map(
     # add a single dot for start and goal colors (for when the grid cell is small)
     ax.plot(c_arr[0, 0], c_arr[0, 1], marker="o", color="#00FF55", ms=10, zorder=1.1)
     ax.plot(c_arr[-1, 0], c_arr[-1, 1], marker="o", color="#FFD900", ms=10, zorder=1.1)
+
+
+def plot_trajectory_over_waypoints(
+    ax: Axes,
+    traj: np.ndarray,
+    waypoints: np.ndarray,
+) -> None:
+    """
+    Plot a controlled robot trajectory
+
+    and the waypoints it's attempting to reach.
+    :param ax: plt axes
+    :param traj: trajectory: [[x, y], ...]
+    :param waypoints: list of control target waypoints [[x, y], ...]
+    """
+
+    ax.scatter(waypoints[:, 0], waypoints[:, 1], c="#BB4C4C")
+    ax.plot(traj[:, 0], traj[:, 1], "bo-", ms=4, label="Robot Path")
