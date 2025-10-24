@@ -12,8 +12,10 @@ import numpy as np
 from hw1.astar import AStar
 from hw1.data import Dataset
 from hw1.map import Map
+from hw1.motion_model import MotionModel
 from hw1.plot import plot_path_on_map, plot_trajectory_over_waypoints
 from hw1.online_astar import run_astar_online
+from hw1.motion_control import WaypointController
 
 
 REPO_ROOT = pathlib.Path(__file__).parent
@@ -39,7 +41,7 @@ def main():
 
 def q8(ds: Dataset) -> None:
     # simulate our controller over some basic points
-    sample_waypoints = np.array(
+    waypoints = np.array(
         [
             [0, 0],
             [5, 5],
@@ -49,11 +51,31 @@ def q8(ds: Dataset) -> None:
         ]
     )
 
+    # target the waypoints above
+    it = 0
+    ctl = WaypointController()
+    motion = MotionModel()
+    x = np.array([0.0, 0.0, 0.0])
+    u = np.full((2,), np.nan, dtype=np.float32)
+    dt = 0.1
+    dist_thresh_m = 0.05
+    all_x = []
+
+    waypoint_idx = 0
+    while it < 100:
+        all_x.append(x)
+        if np.linalg.norm(x[0:2] - waypoints[waypoint_idx]) < dist_thresh_m:
+            print(f"found waypoint {waypoint_idx}")
+            waypoint_idx += 1
+            if waypoint_idx == len(waypoints):
+                break
+        u = ctl.tick(x, u, waypoints[waypoint_idx])
+        x = motion.tick(u, x, dt)
+        it += 1
+
     fig = plt.figure(figsize=(10, 6))
     ax = fig.subplots(1, 1)
-    plot_trajectory_over_waypoints(
-        ax, np.array([[0, 0], [1, 1], [2, 0]]), sample_waypoints
-    )
+    plot_trajectory_over_waypoints(ax, np.array(all_x), waypoints)
 
 
 def q7(ds: Dataset):
