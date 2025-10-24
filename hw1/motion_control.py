@@ -15,29 +15,26 @@ class WaypointController:
 
     @dataclass
     class Config:
-        # proportional gain for omega
-        wK_p: float = 10.0
-        # omega bias - min. angular velocity (with 0 error)
-        wp_0: float = 0
-
         # proportional gain for v (forward speed)
         vK_p: float = 8.0
         # v bias - min. speed (with 0 error)
         vp_0: float = 0.15
+
+        # proportional gain for omega
+        wK_p: float = 10.0
+        # omega bias - min. angular velocity (with 0 error)
+        wp_0: float = 0.0
 
         # max accel (m/s^2)
         vdot_max: float = 0.288
         # max angular accel (rad/s^2)
         wdot_max: float = 5.579
 
-    def __init__(self, freq: float, config: Config | None = None) -> None:
+    def __init__(self, config: Config | None = None) -> None:
         """
-        :param freq: approximate frequency at which tick() is called
         :param config: controller configuration
         """
-        #
         self._c = self.Config() if config is None else config
-        self.freq = freq
 
     def tick(
         self, x_curr: np.ndarray, u_prev: np.ndarray, waypoint: np.ndarray
