@@ -296,6 +296,7 @@ def plot_trajectory_over_waypoints(
     ax: Axes,
     traj: np.ndarray,
     waypoints: np.ndarray,
+    distance_threshold: float,
 ) -> None:
     """
     Plot a controlled robot trajectory
@@ -304,7 +305,13 @@ def plot_trajectory_over_waypoints(
     :param ax: plt axes
     :param traj: trajectory: [[x, y], ...]
     :param waypoints: list of control target waypoints [[x, y], ...]
+    :param distance_threshold: "close enough" radius used to evaluate
+        whether a waypoint was reached
     """
 
     ax.scatter(waypoints[:, 0], waypoints[:, 1], c="#BB4C4C")
     ax.plot(traj[:, 0], traj[:, 1], "bo-", ms=4, label="Robot Path")
+
+    for wp in waypoints:
+        c = patches.Circle(wp, distance_threshold, facecolor="#97BBF4")
+        ax.add_patch(c)

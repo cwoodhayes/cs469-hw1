@@ -47,7 +47,7 @@ def q8(ds: Dataset) -> None:
             [5, 5],
             [10, 0],
             [12, 9],
-            [0, 0],
+            [0, 3],
         ]
     )
 
@@ -58,7 +58,7 @@ def q8(ds: Dataset) -> None:
     x = np.array([0.0, 0.0, 0.0])
     u = np.full((2,), np.nan, dtype=np.float32)
     dt = 0.1
-    dist_thresh_m = 0.05
+    dist_thresh_m = 0.5
     all_x = []
 
     waypoint_idx = 0
@@ -75,7 +75,7 @@ def q8(ds: Dataset) -> None:
 
     fig = plt.figure(figsize=(10, 6))
     ax = fig.subplots(1, 1)
-    plot_trajectory_over_waypoints(ax, np.array(all_x), waypoints)
+    plot_trajectory_over_waypoints(ax, np.array(all_x), waypoints, dist_thresh_m)
 
 
 def q7(ds: Dataset):
