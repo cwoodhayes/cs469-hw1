@@ -1,88 +1,80 @@
 """
-Controller code for the turtle, ensuring that it hits waypoints
+Controller code for the robot, ensuring that it hits waypoints
 """
 
 from dataclasses import dataclass
 import numpy as np
 
-from turtlesim_msgs.msg import Pose
 
-
-class TurtleWaypointReached(Exception):
+class WaypointController:
     """
-    Raised when a waypoint is reached in tick()
-    """
+    PID controller for a diff-drive robot.
 
-    pass
-
-
-class TurtleWaypointController:
-    """
-    Encapsulates logic for controlling the turtle's motion, such that
-    it travels towards a desired waypoint
+    Given current position feedback, output angular & linear velocity control
     """
 
     @dataclass
     class Config:
         # proportional gain for omega
-        K_p: float = 10.0
-        # angular velocity with 0 error
-        p_0: float = 0
+        wK_p: float = 10.0
+        # omega bias - min. angular velocity (with 0 error)
+        wp_0: float = 0
 
-        # min. linear velocity = (filter freq (Hz) * tolerance (m) * 2) * velocity_fudge_factor
-        velocity_fudge_factor: float = 0.5
+        # proportional gain for v (forward speed)
+        vK_p: float = 8.0
+        # v bias - min. speed (with 0 error)
+        vp_0: float = 0.15
 
-    def __init__(self, freq: float, tolerance: float = 0.05) -> None:
+        # max accel (m/s^2)
+        vdot_max: float = 0.288
+        # max angular accel (rad/s^2)
+        wdot_max: float = 5.579
+
+    def __init__(self, freq: float, config: Config | None = None) -> None:
         """
         :param freq: approximate frequency at which tick() is called
-        :param tolerance: waypoint arrival tolerance
+        :param config: controller configuration
         """
-        self._pose = np.full(5, np.nan)
-        # robot state as published by turtlesim, in the form (x, y, theta, forward_velocity, angular_velocity)
-
-        self._config = self.Config()
-        self.tolerance = tolerance
+        #
+        self._c = self.Config() if config is None else config
         self.freq = freq
 
-    def tick(self, waypoint: np.ndarray) -> tuple[np.ndarray, float]:
+    def tick(
+        self, x_curr: np.ndarray, u_prev: np.ndarray, waypoint: np.ndarray
+    ) -> np.ndarray:
         """
         Executes one pass of the control loop; outputs linear & angular velocity
 
+        :param x_curr: robot state in the form [x, y, theta]
+        :param u_prev: control output from the previous timestep [v, w]
         :param waypoint: [x, y] for the point we're aiming for
-        :return: [linear & angular velocity, current distance to waypoint]
-        :rtype: (np.ndarray(v_forward, theta_dot), float)
+        :return: [v,w] control output
         """
-        # a P controller for the
+        # 2 separate P controllers, one for forward velocity, the other for angular velocity
 
-        # some facts:
-        # - we need our max distance traveled per update to be <tolerance when near the target, to make sure that we don't speed over the target
-        # - ideally, we should slow down when approaching the target, but we don't need to (we can just go slow the whole time)
-        # - if we hold linear velocity constant per the first fact above, we can just do a P controller on the forward orientation
+        p_to_w = waypoint - x_curr[0:2]
 
-        ###################### Begin_Citation [3] ############################
-
-        min_linear_velocity = (
-            self.freq * self.tolerance * 2
-        ) * self._config.velocity_fudge_factor
-        # just use the minimum all the time for now, and do a P controller for the angle
-
-        # calculate angular error
-        p_to_w = waypoint - self._pose[:2]
-        dist = np.linalg.norm(p_to_w)
-        if dist <= self.tolerance:
-            # we don't need to do any other calcs; let the caller handle this & call tick() again with a new waypoint
-            # if it wants
-            raise TurtleWaypointReached()
-
-        # arctan outputs in the range [-pi/2, pi/2], but we need [-pi, pi]. hence arctan2
+        # control angular velocity:
+        # waypoint heading in range [-pi, pi]
         waypoint_heading = np.arctan2(p_to_w[1], p_to_w[0])
-        err = self.angle_diff(waypoint_heading, self._pose[2])
+        theta_err = self.angle_diff(waypoint_heading, x_curr[2])
 
         # units of err are radians; units of p_out should be rads/s. So we consider K_p as Hz
-        p_out = self._config.K_p * err + self._config.p_0
+        w_out = self._c.wK_p * theta_err + self._c.wp_0
 
-        ###################### End_Citation [3] ############################
-        return np.array((min_linear_velocity, p_out)), dist
+        # control linear velocity:
+        dist_err = np.linalg.norm(p_to_w)
+        v_out = self._c.vK_p * dist_err + self._c.vp_0
+
+        # enforce acceleration limits:
+        vdot = v_out - u_prev[0]
+        wdot = w_out - u_prev[1]
+        if abs(vdot) > self._c.vdot_max:
+            v_out = u_prev[0] + (self._c.vdot_max if vdot > 0 else -self._c.vdot_max)
+        if abs(wdot) > self._c.wdot_max:
+            w_out = u_prev[1] + (self._c.wdot_max if wdot > 0 else -self._c.wdot_max)
+
+        return np.array((v_out, w_out))
 
     @staticmethod
     def angle_diff(a: float, b: float) -> float:
@@ -94,30 +86,4 @@ class TurtleWaypointController:
         :param b: angle 2
         :return: shortest angle between them
         """
-        ########### Begin_Citation[4] ###################
         return np.arctan2(np.sin(a - b), np.cos(a - b))
-        ########### End_Citation ########################
-
-    def set_pose(self, pose: Pose) -> None:
-        """
-        Sets robot pose. No side-effects, just a setter
-        """
-        self._pose = np.array(
-            (
-                pose.x,
-                pose.y,
-                pose.theta,
-                pose.linear_velocity,
-                pose.angular_velocity,
-            )
-        )
-
-    def get_pose(self) -> np.ndarray:
-        """
-        Get robot pose
-
-        :param self: Description
-        :return: Description
-        :rtype: ndarray
-        """
-        return self._pose
