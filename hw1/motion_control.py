@@ -16,7 +16,7 @@ class WaypointController:
     @dataclass
     class Config:
         # proportional gain for v (forward speed)
-        vK_p: float = 8.0
+        vK_p: float = 0.2
         # v bias - min. speed (with 0 error)
         vp_0: float = 0.15
 
@@ -71,7 +71,7 @@ class WaypointController:
         if abs(wdot) > self._c.wdot_max:
             w_out = u_prev[1] + (self._c.wdot_max if wdot > 0 else -self._c.wdot_max)
 
-        return np.array((1.0, w_out))
+        return np.array((v_out, w_out))
 
     @staticmethod
     def angle_diff(a: float, b: float) -> float:

@@ -315,3 +315,5 @@ def plot_trajectory_over_waypoints(
     for wp in waypoints:
         c = patches.Circle(wp, distance_threshold, facecolor="#97BBF4")
         ax.add_patch(c)
+
+    ax.legend()

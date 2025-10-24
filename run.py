@@ -76,6 +76,7 @@ def q8(ds: Dataset) -> None:
     fig = plt.figure(figsize=(10, 6))
     ax = fig.subplots(1, 1)
     plot_trajectory_over_waypoints(ax, np.array(all_x), waypoints, dist_thresh_m)
+    ax.set_title("Motion controller targeting arbitrary waypoints")
 
 
 def q7(ds: Dataset):
