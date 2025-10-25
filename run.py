@@ -15,7 +15,7 @@ from hw1.map import Map
 from hw1.motion_model import MotionModel
 from hw1.plot import plot_path_on_map, plot_trajectory_over_waypoints
 from hw1.online_astar import run_astar_online
-from hw1.motion_control import WaypointController
+from hw1.motion_control import WaypointController, RobotNavSim
 
 
 REPO_ROOT = pathlib.Path(__file__).parent
@@ -34,7 +34,7 @@ def main():
     # q3(ds)
     # q5(ds)
     # q7(ds)
-    # q8(ds)
+    q8(ds)
     q9(ds)
 
     plt.show()
@@ -77,34 +77,21 @@ def q9(ds: Dataset) -> None:
             vdot_max=0.288,
             wdot_max=5.579,
         )
-
-        rng = np.random.default_rng()
-        ctl = WaypointController(ctl_cfg)
-        motion = MotionModel()
-        u = np.full((2,), np.nan, dtype=np.float32)
-        dt = 0.1
-        dist_thresh_m = 0.05
-        stddev = 0.02
+        sim = RobotNavSim(RobotNavSim.Config(), WaypointController(ctl_cfg))
         all_x = []
-        it = 0
+        u = np.full((2,), np.nan, dtype=np.float32)
 
-        waypoint_idx = 0
-        while it < 100:
-            all_x.append(x)
-            if np.linalg.norm(x[0:2] - waypoints[waypoint_idx]) < dist_thresh_m:
-                print(f"found waypoint {waypoint_idx} (it={it})")
-                waypoint_idx += 1
-                if waypoint_idx == len(waypoints):
-                    break
-            u = ctl.tick(x, u, waypoints[waypoint_idx])
-            x_ideal = motion.tick(u, x, dt)
-            x = x_ideal + rng.normal(0, stddev, size=x.shape)
-            it += 1
+        for wp_idx in range(len(waypoints)):
+            traj, u_all = sim.navigate(x, u, waypoints[wp_idx])
+            x = traj[-1]
+            u = u_all[-1] if len(u_all) > 0 else u
+            print(f"found waypoint {wp_idx} (it={len(traj)})")
+            all_x.extend(traj)
 
         groundtruth_map = Map.construct_from_dataset(ds, cfg)
         plot_path_on_map(map, axes[idx], path, groundtruth_map, plot_centers=False)
         plot_trajectory_over_waypoints(
-            axes[idx], np.array(all_x), waypoints, dist_thresh_m
+            axes[idx], np.array(all_x), waypoints, sim.c.dist_thresh_m
         )
         axes[idx].set_title(f"S={start_loc}, G={goal_loc}")
 
@@ -127,31 +114,23 @@ def q8(ds: Dataset) -> None:
     )
 
     # target the waypoints above
-    it = 0
-    ctl = WaypointController()
-    motion = MotionModel()
+    sim_cfg = RobotNavSim.Config(x_noise_stddev=0.0, dist_thresh_m=0.5)
+    sim = RobotNavSim(sim_cfg, WaypointController())
+    all_x = []
     x = np.array([0.0, 0.0, 0.0])
     u = np.full((2,), np.nan, dtype=np.float32)
-    dt = 0.1
-    dist_thresh_m = 0.5
-    all_x = []
 
-    waypoint_idx = 0
-    while it < 100:
-        all_x.append(x)
-        if np.linalg.norm(x[0:2] - waypoints[waypoint_idx]) < dist_thresh_m:
-            print(f"found waypoint {waypoint_idx}")
-            waypoint_idx += 1
-            if waypoint_idx == len(waypoints):
-                break
-        u = ctl.tick(x, u, waypoints[waypoint_idx])
-        x = motion.tick(u, x, dt)
-        it += 1
+    for wp_idx in range(len(waypoints)):
+        traj, u_all = sim.navigate(x, u, waypoints[wp_idx])
+        x = traj[-1]
+        u = u_all[-1] if len(u_all) > 0 else u
+        print(f"found waypoint {wp_idx} (it={len(traj)})")
+        all_x.extend(traj)
 
     fig = plt.figure(figsize=(10, 6))
     ax = fig.subplots(1, 1)
-    plot_trajectory_over_waypoints(ax, np.array(all_x), waypoints, dist_thresh_m)
-    ax.set_title(f"Motion controller targeting 5 waypoints (dt={dt})")
+    plot_trajectory_over_waypoints(ax, np.array(all_x), waypoints, sim.c.dist_thresh_m)
+    ax.set_title(f"Motion controller targeting 5 waypoints (dt={sim.c.dt})")
 
 
 def q7(ds: Dataset):
