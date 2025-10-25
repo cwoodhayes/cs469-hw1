@@ -37,6 +37,15 @@ class Path:
     def locs(self) -> list[tuple[int, int]]:
         return [n.loc for n in self.nodes]
 
+    def get_centers(self, m: Map) -> list[tuple[float, float]]:
+        out = []
+        for n in self.nodes:
+            corner = m.grid_loc_to_world_coords_corner(n.loc)
+            center_x = corner[0] + m.c.cell_size / 2
+            center_y = corner[1] - m.c.cell_size / 2
+            out.append((center_x, center_y))
+        return out
+
     def print(self) -> None:
         print("\n~~~~~~~~~~~~~\nPATH:")
         for loc in self.locs:

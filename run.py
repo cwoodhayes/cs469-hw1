@@ -31,16 +31,87 @@ def main():
     # my assigned dataset is ds1, so I'm hardcoding this
     ds = Dataset.from_dataset_directory(REPO_ROOT / "data/ds1")
 
-    q3(ds)
-    q5(ds)
-    q7(ds)
-    q8(ds)
+    # q3(ds)
+    # q5(ds)
+    # q7(ds)
+    # q8(ds)
+    q9(ds)
 
     plt.show()
 
 
+def q9(ds: Dataset) -> None:
+    starts = [(2.45, -3.55), (4.95, -0.05), (-0.55, 1.45)]
+    goals = [(0.95, -1.55), (2.45, 0.25), (1.95, 3.95)]
+
+    fig = plt.figure(figsize=(10, 6))
+    axes: list[Axes] = fig.subplots(1, 3)
+
+    for start_loc, goal_loc, idx in zip(starts, goals, range(3)):
+        cfg = Map.Config(
+            dimensions=np.array(
+                [
+                    [-2, 5],
+                    [-6, 6],
+                ]
+            ),
+            cell_size=0.1,
+            start=np.array(start_loc),
+            goal=np.array(goal_loc),
+            obstacle_radius=0.3,
+        )
+
+        path, map = run_astar_online(ds, cfg)
+        path.print()
+
+        # target the waypoints above
+        waypoints = np.array(path.get_centers(map))
+        # ignore the first waypoint--that's our start
+        x = np.array([*waypoints[0], -np.pi / 2])
+        waypoints = waypoints[1:, :]
+        ctl_cfg = WaypointController.Config(
+            vK_p=0.1,
+            vp_0=0.03,
+            wK_p=6.0,
+            wp_0=0.0,
+            vdot_max=0.288,
+            wdot_max=5.579,
+        )
+        ctl = WaypointController(ctl_cfg)
+        motion = MotionModel()
+        u = np.full((2,), np.nan, dtype=np.float32)
+        dt = 0.1
+        dist_thresh_m = 0.05
+        all_x = []
+        it = 0
+
+        waypoint_idx = 0
+        while it < 100:
+            all_x.append(x)
+            if np.linalg.norm(x[0:2] - waypoints[waypoint_idx]) < dist_thresh_m:
+                print(f"found waypoint {waypoint_idx}")
+                waypoint_idx += 1
+                if waypoint_idx == len(waypoints):
+                    break
+            u = ctl.tick(x, u, waypoints[waypoint_idx])
+            x = motion.tick(u, x, dt)
+            it += 1
+
+        groundtruth_map = Map.construct_from_dataset(ds, cfg)
+        plot_path_on_map(map, axes[idx], path, groundtruth_map, plot_centers=False)
+        plot_trajectory_over_waypoints(
+            axes[idx], np.array(all_x), waypoints, dist_thresh_m
+        )
+        axes[idx].set_title(f"S={start_loc}, G={goal_loc}")
+
+    fig.legend(*axes[-1].get_legend_handles_labels(), loc="lower center", ncol=3)
+    fig.suptitle("Q9: Online A*, post-hoc control", fontsize=16, fontweight="bold")
+    fig.show()
+
+
 def q8(ds: Dataset) -> None:
     # simulate our controller navigating to some sample points
+    print("Part B, Question 8:")
     waypoints = np.array(
         [
             [0, 0],
@@ -76,7 +147,7 @@ def q8(ds: Dataset) -> None:
     fig = plt.figure(figsize=(10, 6))
     ax = fig.subplots(1, 1)
     plot_trajectory_over_waypoints(ax, np.array(all_x), waypoints, dist_thresh_m)
-    ax.set_title("Motion controller targeting arbitrary waypoints")
+    ax.set_title(f"Motion controller targeting 5 waypoints (dt={dt})")
 
 
 def q7(ds: Dataset):

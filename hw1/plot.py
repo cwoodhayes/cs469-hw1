@@ -327,7 +327,9 @@ def plot_trajectory_over_waypoints(
     ax.plot(traj[:, 0], traj[:, 1], "bo-", ms=4, label="Robot Path")
 
     for wp in waypoints:
-        c = patches.Circle(wp, distance_threshold, facecolor="#97BBF4")
+        c = patches.Circle(
+            wp, distance_threshold, edgecolor="#4F8FF6", facecolor=(1, 1, 1, 0)
+        )
         ax.add_patch(c)
 
     ax.legend()
