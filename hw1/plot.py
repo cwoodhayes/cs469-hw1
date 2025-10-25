@@ -124,7 +124,7 @@ def plot_path_on_map(
 
 def plot_trajectory_over_waypoints(
     ax: Axes,
-    traj: np.ndarray,
+    traj: np.ndarray | None,
     waypoints: np.ndarray,
     distance_threshold: float,
 ) -> None:
@@ -141,7 +141,8 @@ def plot_trajectory_over_waypoints(
     """
 
     ax.scatter(waypoints[:, 0], waypoints[:, 1], c="#BB4C4C", label="Waypoint")
-    ax.plot(traj[:, 0], traj[:, 1], "bo-", ms=4, label="Robot Path")
+    if traj is not None and traj.size > 0:
+        ax.plot(traj[:, 0], traj[:, 1], "bo-", ms=4, label="Robot Path")
 
     c = None
     for wp in waypoints:

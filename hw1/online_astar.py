@@ -11,9 +11,12 @@ import numpy as np
 from hw1.astar import AStar, Node, Path
 from hw1.data import Dataset
 from hw1.map import Map
+from hw1.motion_control import RobotNavSim
 
 
-def run_astar_online(ds: Dataset, cfg: Map.Config) -> tuple[Path, Map]:
+def run_astar_online(
+    ds: Dataset, cfg: Map.Config, sim: RobotNavSim | None = None
+) -> tuple[Path, Map, np.ndarray | None]:
     """
     Run A* "online", such that:
     - we can only see obstacles when we are adjacent to them, and start out
@@ -21,7 +24,11 @@ def run_astar_online(ds: Dataset, cfg: Map.Config) -> tuple[Path, Map]:
 
     :param ds: dataset containing obstacles
     :param cfg: map configuration
-    :return: the Path the robot took, and the Map it discovered
+    :param sim: if given, use the sim & controller to simulate a real
+    robot trajectory through the map.
+    :return: the Path the robot took, the Map it discovered, and the
+    trajectory it followed (only used if sim argument was given,
+    otherwise None is returned)
     """
 
     robot_map_cfg = copy(cfg)
@@ -55,7 +62,7 @@ def run_astar_online(ds: Dataset, cfg: Map.Config) -> tuple[Path, Map]:
         robot_loc = p.locs[1]
         path.nodes.append(p.nodes[1])
 
-    return path, map
+    return path, map, None
 
 
 def run_astar_control_online(ds: Dataset, cfg: Map.Config) -> tuple[Path, Map]:
