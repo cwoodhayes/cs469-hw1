@@ -323,13 +323,16 @@ def plot_trajectory_over_waypoints(
         whether a waypoint was reached
     """
 
-    ax.scatter(waypoints[:, 0], waypoints[:, 1], c="#BB4C4C")
+    ax.scatter(waypoints[:, 0], waypoints[:, 1], c="#BB4C4C", label="Waypoint")
     ax.plot(traj[:, 0], traj[:, 1], "bo-", ms=4, label="Robot Path")
 
+    c = None
     for wp in waypoints:
         c = patches.Circle(
             wp, distance_threshold, edgecolor="#4F8FF6", facecolor=(1, 1, 1, 0)
         )
         ax.add_patch(c)
+    if c is not None:
+        c.set_label("Waypoint radius")
 
     ax.legend()

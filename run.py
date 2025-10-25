@@ -112,25 +112,38 @@ def q8(ds: Dataset) -> None:
             [0, 3],
         ]
     )
+    stddevs = [0.0, 0.02, 0.1]
+    dt = 0.1
+    fig = plt.figure(figsize=(15, 6))
+    axes = fig.subplots(1, 3)
 
-    # target the waypoints above
-    sim_cfg = RobotNavSim.Config(x_noise_stddev=0.0, dist_thresh_m=0.5)
-    sim = RobotNavSim(sim_cfg, WaypointController())
-    all_x = []
-    x = np.array([0.0, 0.0, 0.0])
-    u = np.full((2,), np.nan, dtype=np.float32)
+    for std, ax in zip(stddevs, axes):
+        # target the waypoints above
+        sim_cfg = RobotNavSim.Config(dt=dt, x_noise_stddev=std, dist_thresh_m=0.5)
+        sim = RobotNavSim(sim_cfg, WaypointController())
+        all_x = []
+        x = np.array([0.0, 0.0, 0.0])
+        u = np.full((2,), np.nan, dtype=np.float32)
 
-    for wp_idx in range(len(waypoints)):
-        traj, u_all = sim.navigate(x, u, waypoints[wp_idx])
-        x = traj[-1]
-        u = u_all[-1] if len(u_all) > 0 else u
-        print(f"found waypoint {wp_idx} (it={len(traj)})")
-        all_x.extend(traj)
+        for wp_idx in range(len(waypoints)):
+            traj, u_all = sim.navigate(x, u, waypoints[wp_idx])
+            x = traj[-1]
+            u = u_all[-1] if len(u_all) > 0 else u
+            print(f"found waypoint {wp_idx} (it={len(traj)})")
+            all_x.extend(traj)
 
-    fig = plt.figure(figsize=(10, 6))
-    ax = fig.subplots(1, 1)
-    plot_trajectory_over_waypoints(ax, np.array(all_x), waypoints, sim.c.dist_thresh_m)
-    ax.set_title(f"Motion controller targeting 5 waypoints (dt={sim.c.dt})")
+        plot_trajectory_over_waypoints(
+            ax, np.array(all_x), waypoints, sim.c.dist_thresh_m
+        )
+        ax.set_title(f"x noise stddev={std}, #iter={len(all_x)})")
+
+    fig.legend(*axes[-1].get_legend_handles_labels(), loc="lower center", ncol=3)
+    fig.suptitle(
+        f"Q8: Motion control for 5 waypoints, dt={dt}",
+        fontsize=16,
+        fontweight="bold",
+    )
+    fig.show()
 
 
 def q7(ds: Dataset):
