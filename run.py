@@ -89,7 +89,7 @@ def q9(ds: Dataset) -> None:
         while it < 100:
             all_x.append(x)
             if np.linalg.norm(x[0:2] - waypoints[waypoint_idx]) < dist_thresh_m:
-                print(f"found waypoint {waypoint_idx}")
+                print(f"found waypoint {waypoint_idx} (it={it})")
                 waypoint_idx += 1
                 if waypoint_idx == len(waypoints):
                     break
