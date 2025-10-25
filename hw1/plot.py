@@ -152,5 +152,3 @@ def plot_trajectory_over_waypoints(
         ax.add_patch(c)
     if c is not None:
         c.set_label("Waypoint radius")
-
-    ax.legend()

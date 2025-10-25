@@ -30,11 +30,11 @@ def main():
     # my assigned dataset is ds1, so I'm hardcoding this
     ds = Dataset.from_dataset_directory(REPO_ROOT / "data/ds1")
 
-    q3(ds)
-    q5(ds)
-    q7(ds)
+    # q3(ds)
+    # q5(ds)
+    # q7(ds)
     q8(ds)
-    q9(ds)
+    # q9(ds)
     q10(ds)
 
     plt.show()
@@ -71,15 +71,16 @@ def q10(ds: Dataset):
             obstacle_radius=0.3,
         )
 
-        path, map, all_x = run_astar_online(ds, cfg, sim)
+        path, map, traj = run_astar_online(ds, cfg, sim)
         path.print()
 
         waypoints = np.array(path.get_centers(map))
         groundtruth_map = Map.construct_from_dataset(ds, cfg)
 
         plot_path_on_map(map, axes[idx], path, groundtruth_map, plot_centers=False)
-        plot_trajectory_over_waypoints(axes[idx], all_x, waypoints, sim.c.dist_thresh_m)
-        axes[idx].set_title(f"S={start_loc}, G={goal_loc}")
+        plot_trajectory_over_waypoints(axes[idx], traj, waypoints, sim.c.dist_thresh_m)
+        total_t = sim.c.dt * len(traj)
+        axes[idx].set_title(f"S={start_loc}, G={goal_loc}, t={total_t}s")
 
     fig.legend(*axes[-1].get_legend_handles_labels(), loc="lower center", ncol=3)
     fig.suptitle("Q10: Online A*, online control", fontsize=16, fontweight="bold")
@@ -181,7 +182,7 @@ def q8(ds: Dataset) -> None:
         plot_trajectory_over_waypoints(
             ax, np.array(all_x), waypoints, sim.c.dist_thresh_m
         )
-        ax.set_title(f"x noise stddev={std}, #iter={len(all_x)})")
+        ax.set_title(f"x noise stddev={std} (#iter={len(all_x)})")
 
     fig.legend(*axes[-1].get_legend_handles_labels(), loc="lower center", ncol=3)
     fig.suptitle(
