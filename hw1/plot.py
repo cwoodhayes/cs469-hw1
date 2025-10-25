@@ -204,7 +204,7 @@ def plot_map(map: Map, ax: Axes, groundtruth_map: Map | None = None) -> None:
             obs,  # type: ignore
             map.c.cell_size,
             -map.c.cell_size,
-            color="black",
+            facecolor="black",
         )
         ax.add_patch(patch)
     if patch is not None:
@@ -220,7 +220,7 @@ def plot_map(map: Map, ax: Axes, groundtruth_map: Map | None = None) -> None:
                 obs,  # type: ignore
                 map.c.cell_size,
                 -map.c.cell_size,
-                color="#00000037",
+                facecolor="#00000037",
             )
             ax.add_patch(patch)
         if patch is not None:
@@ -302,6 +302,7 @@ def plot_trajectory_over_waypoints(
     Plot a controlled robot trajectory
 
     and the waypoints it's attempting to reach.
+
     :param ax: plt axes
     :param traj: trajectory: [[x, y], ...]
     :param waypoints: list of control target waypoints [[x, y], ...]

@@ -33,14 +33,14 @@ def main():
 
     # q3(ds)
     # q5(ds)
-    # q7(ds)
+    q7(ds)
     q8(ds)
 
     plt.show()
 
 
 def q8(ds: Dataset) -> None:
-    # simulate our controller over some basic points
+    # simulate our controller navigating to some sample points
     waypoints = np.array(
         [
             [0, 0],
