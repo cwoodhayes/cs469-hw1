@@ -31,13 +31,18 @@ def main():
     # my assigned dataset is ds1, so I'm hardcoding this
     ds = Dataset.from_dataset_directory(REPO_ROOT / "data/ds1")
 
-    q3(ds)
-    q5(ds)
-    q7(ds)
+    # q3(ds)
+    # q5(ds)
+    # q7(ds)
     q8(ds)
-    q9(ds)
+    # q9(ds)
+    q10(ds)
 
     plt.show()
+
+
+def q10(ds: Dataset):
+    pass
 
 
 def q9(ds: Dataset) -> None:
@@ -112,10 +117,10 @@ def q8(ds: Dataset) -> None:
             [0, 3],
         ]
     )
-    stddevs = [0.0, 0.02, 0.1]
+    stddevs = [0.0, 0.1, 0.4, 0.8]
     dt = 0.1
-    fig = plt.figure(figsize=(15, 6))
-    axes = fig.subplots(1, 3)
+    fig = plt.figure(figsize=(20, 6))
+    axes = fig.subplots(1, 4)
 
     for std, ax in zip(stddevs, axes):
         # target the waypoints above

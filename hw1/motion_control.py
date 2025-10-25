@@ -111,7 +111,8 @@ class RobotNavSim:
         self.c = cfg
         self.ctl = controller
         self.motion = MotionModel()
-        self.rng = rng if rng is not None else np.random.default_rng()
+        # default to seed=0 for repeatability
+        self.rng = rng if rng is not None else np.random.default_rng(seed=0)
 
     def navigate(
         self, x0: np.ndarray, u_prev: np.ndarray, waypoint: np.ndarray
