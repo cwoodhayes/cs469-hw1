@@ -77,11 +77,14 @@ def q9(ds: Dataset) -> None:
             vdot_max=0.288,
             wdot_max=5.579,
         )
+
+        rng = np.random.default_rng()
         ctl = WaypointController(ctl_cfg)
         motion = MotionModel()
         u = np.full((2,), np.nan, dtype=np.float32)
         dt = 0.1
         dist_thresh_m = 0.05
+        stddev = 0.02
         all_x = []
         it = 0
 
@@ -94,7 +97,8 @@ def q9(ds: Dataset) -> None:
                 if waypoint_idx == len(waypoints):
                     break
             u = ctl.tick(x, u, waypoints[waypoint_idx])
-            x = motion.tick(u, x, dt)
+            x_ideal = motion.tick(u, x, dt)
+            x = x_ideal + rng.normal(0, stddev, size=x.shape)
             it += 1
 
         groundtruth_map = Map.construct_from_dataset(ds, cfg)
