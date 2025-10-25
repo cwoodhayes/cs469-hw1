@@ -16,7 +16,7 @@ from hw1.motion_control import RobotNavSim
 
 def run_astar_online(
     ds: Dataset, cfg: Map.Config, sim: RobotNavSim | None = None
-) -> tuple[Path, Map, np.ndarray | None]:
+) -> tuple[Path, Map, np.ndarray]:
     """
     Run A* "online", such that:
     - we can only see obstacles when we are adjacent to them, and start out
@@ -28,7 +28,7 @@ def run_astar_online(
     robot trajectory through the map.
     :return: the Path the robot took, the Map it discovered, and the
     trajectory it followed (only used if sim argument was given,
-    otherwise None is returned)
+    otherwise [] is returned)
     """
 
     robot_map_cfg = copy(cfg)
@@ -76,11 +76,13 @@ def run_astar_online(
             u = u_all[-1] if len(u_all) > 0 else u
             x_all.extend(traj)
             robot_loc = map.world_coords_to_grid_loc(x[0:2])
+            path.nodes.append(Node(robot_loc))
+            print(f"Reached: loc={robot_loc}, x={x.round(2)}")
         else:
             robot_loc = target_loc
             path.nodes.append(p.nodes[1])
 
-    return path, map, None
+    return path, map, np.array(x_all)
 
 
 def run_astar_control_online(ds: Dataset, cfg: Map.Config) -> tuple[Path, Map]:
