@@ -69,9 +69,10 @@ def run_astar_online(
             # attempt to navigate to the center of the next square...
             # in reality, noise may cause us to enter another square first,
             # in which case we will run A* again.
-            traj, u_all = sim.navigate(
-                x, u, map.grid_loc_to_world_coords_center(target_loc)
-            )
+            target_coord = map.grid_loc_to_world_coords_center(target_loc)
+            bounds = map.grid_loc_to_bounds(robot_loc)
+            traj, u_all = sim.navigate(x, u, target_coord, bounds)
+
             x = traj[-1]
             u = u_all[-1] if len(u_all) > 0 else u
             x_all.extend(traj)

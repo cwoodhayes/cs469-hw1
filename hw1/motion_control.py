@@ -169,7 +169,9 @@ class RobotNavSim:
             all_x.append(x)
             if np.linalg.norm(x[0:2] - waypoint) < self.c.dist_thresh_m:
                 return all_x, all_u
-            if grid_bounds and self._point_is_out_of_bounds(x[0:2], grid_bounds):
+            if grid_bounds is not None and self._point_is_out_of_bounds(
+                x[0:2], grid_bounds
+            ):
                 return all_x, all_u
             u = self.ctl.tick(x, u, waypoint)
             x_ideal = self.motion.tick(u, x, self.c.dt)

@@ -123,6 +123,20 @@ class Map:
         center_y = corner[1] - self.c.cell_size / 2
         return np.array((center_x, center_y))
 
+    def grid_loc_to_bounds(self, loc: tuple[int, int] | np.ndarray) -> np.ndarray:
+        """
+        Convert grid index (row, col) of a cell into the boundaries
+        of that cell((xmin, xmax), (ymin, ymax))
+
+        :param loc: grid index (row, col)
+        :type loc: tuple[int, int] | np.ndarray
+        :return: world coordinate (x,y)
+        """
+        corner = self.grid_loc_to_world_coords_corner(loc)
+        xlim = (corner[0], corner[0] + self.c.cell_size)
+        ylim = (corner[1] - self.c.cell_size, corner[1])
+        return np.array((xlim, ylim))
+
     def world_coords_to_corner(self, coord: np.ndarray) -> np.ndarray:
         """
         convenience method for plotting. returns the top left corner of the cell
