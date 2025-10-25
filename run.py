@@ -31,8 +31,8 @@ def main():
     # my assigned dataset is ds1, so I'm hardcoding this
     ds = Dataset.from_dataset_directory(REPO_ROOT / "data/ds1")
 
-    # q3(ds)
-    # q5(ds)
+    q3(ds)
+    q5(ds)
     q7(ds)
     q8(ds)
 
@@ -106,7 +106,7 @@ def q7(ds: Dataset):
         path.print()
 
         groundtruth_map = Map.construct_from_dataset(ds, cfg)
-        plot_path_on_map(map, axes[idx], path, groundtruth_map)
+        plot_path_on_map(map, axes[idx], path, groundtruth_map, plot_centers=False)
         axes[idx].set_title(f"S={start_loc}, G={goal_loc}")
 
     fig.legend(*axes[-1].get_legend_handles_labels(), loc="lower center", ncol=3)

@@ -266,6 +266,7 @@ def plot_path_on_map(
     ax: Axes,
     p: astar.Path,
     groundtruth_map: Map | None = None,
+    plot_centers: bool = True,
 ) -> None:
     """
     plots the robot path discoverd by A* on the map.
@@ -275,17 +276,29 @@ def plot_path_on_map(
     """
     plot_map(map, ax, groundtruth_map)
 
-    # plunk a dot down in the middle of every cell visited
+    # Fill in every cell visited in light blue
     centers = []
+    rect = None
     for loc in p.locs:
         corner = map.grid_loc_to_world_coords_corner(loc)
+        rect = patches.Rectangle(
+            corner,  # type: ignore
+            map.c.cell_size,
+            -map.c.cell_size,
+            color="#4590E57B",
+        )
+        ax.add_patch(rect)
         center_x = corner[0] + map.c.cell_size / 2
         center_y = corner[1] - map.c.cell_size / 2
         centers.append((center_x, center_y))
 
+    if rect is not None:
+        rect.set_label("Robot Path")
+
     c_arr = np.array(centers)
 
-    ax.plot(c_arr[:, 0], c_arr[:, 1], "bo-", ms=4, label="Robot Path")
+    if plot_centers:
+        ax.plot(c_arr[:, 0], c_arr[:, 1], "bo-", ms=4, label="Robot Path")
 
     # add a single dot for start and goal colors (for when the grid cell is small)
     ax.plot(c_arr[0, 0], c_arr[0, 1], marker="o", color="#00FF55", ms=10, zorder=1.1)
