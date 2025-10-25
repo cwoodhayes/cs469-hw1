@@ -49,6 +49,11 @@ def run_astar_online(
     robot_loc = map.get_start_loc()
     path.nodes.append(Node(loc=robot_loc))
 
+    # starting x and u (only used if sim)
+    x = np.array((*map.grid_loc_to_world_coords_center(robot_loc), -np.pi / 2))
+    u = np.full((2,), np.nan, dtype=np.float32)
+    x_all = []
+
     while robot_loc != map.get_goal_loc():
         # add any obstacles we can now see to the map (all neighboring obstacles
         # in the ground-truth grid.)
@@ -59,8 +64,21 @@ def run_astar_online(
         p = algo.solve(map, robot_loc)
 
         # move to the next location in the new path
-        robot_loc = p.locs[1]
-        path.nodes.append(p.nodes[1])
+        target_loc = p.locs[1]
+        if sim:
+            # attempt to navigate to the center of the next square...
+            # in reality, noise may cause us to enter another square first,
+            # in which case we will run A* again.
+            traj, u_all = sim.navigate(
+                x, u, map.grid_loc_to_world_coords_center(target_loc)
+            )
+            x = traj[-1]
+            u = u_all[-1] if len(u_all) > 0 else u
+            x_all.extend(traj)
+            robot_loc = map.world_coords_to_grid_loc(x[0:2])
+        else:
+            robot_loc = target_loc
+            path.nodes.append(p.nodes[1])
 
     return path, map, None
 

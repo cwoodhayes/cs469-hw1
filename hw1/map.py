@@ -107,6 +107,22 @@ class Map:
         y = self.c.dimensions[1, 1] - (loc[0] * self.c.cell_size)
         return np.array((x, y))
 
+    def grid_loc_to_world_coords_center(
+        self, loc: tuple[int, int] | np.ndarray
+    ) -> np.ndarray:
+        """
+        Convert grid index (row, col) of a cell into the world coordinates
+        of that cell's center
+
+        :param loc: grid index (row, col)
+        :type loc: tuple[int, int] | np.ndarray
+        :return: world coordinate (x,y)
+        """
+        corner = self.grid_loc_to_world_coords_corner(loc)
+        center_x = corner[0] + self.c.cell_size / 2
+        center_y = corner[1] - self.c.cell_size / 2
+        return np.array((center_x, center_y))
+
     def world_coords_to_corner(self, coord: np.ndarray) -> np.ndarray:
         """
         convenience method for plotting. returns the top left corner of the cell

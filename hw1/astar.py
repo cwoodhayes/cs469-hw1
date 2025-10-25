@@ -7,8 +7,6 @@ from collections import defaultdict, deque
 from dataclasses import dataclass, field
 import heapq
 
-import numpy as np
-
 from hw1.map import Map
 
 
@@ -38,13 +36,7 @@ class Path:
         return [n.loc for n in self.nodes]
 
     def get_centers(self, m: Map) -> list[tuple[float, float]]:
-        out = []
-        for n in self.nodes:
-            corner = m.grid_loc_to_world_coords_corner(n.loc)
-            center_x = corner[0] + m.c.cell_size / 2
-            center_y = corner[1] - m.c.cell_size / 2
-            out.append((center_x, center_y))
-        return out
+        return [tuple(m.grid_loc_to_world_coords_center(n.loc)) for n in self.nodes]
 
     def print(self) -> None:
         print("\n~~~~~~~~~~~~~\nPATH:")
@@ -73,7 +65,7 @@ class AStar:
         Gets a grid location (node) and the map, and outputs a scalar heuristic value.
 
         for now, we use the simplest, easiest to calculate admissible heuristic:
-        euclidian distance to the goal divided by the cell size
+        euclidian distance to the goal divided by the cell size (since cell/edge cost = 1)
         """
         goal = map.get_goal_loc()
         dist = ((goal[0] - loc[0]) ** 2 + (goal[1] - loc[1]) ** 2) ** 0.5

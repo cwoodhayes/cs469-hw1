@@ -114,8 +114,31 @@ class RobotNavSim:
         # default to seed=0 for repeatability
         self.rng = rng if rng is not None else np.random.default_rng(seed=0)
 
+    @staticmethod
+    def _point_is_out_of_bounds(point: np.ndarray, bounds: np.ndarray) -> bool:
+        """Check if a point is out of bounds of a square region
+
+        Args:
+            coord (np.ndarray): (x,y)
+            bounds (np.ndarray): 2x2 array ((xmin, xmax), (ymin, ymax)) of square region
+
+        Returns:
+            bool: true if OOB, false otherwise
+        """
+        if point[0] < bounds[0, 0] or point[0] > bounds[0, 1]:
+            # check xlim
+            return True
+        if point[1] < bounds[1, 0] or point[1] > bounds[1, 1]:
+            # check ylim
+            return True
+        return False
+
     def navigate(
-        self, x0: np.ndarray, u_prev: np.ndarray, waypoint: np.ndarray
+        self,
+        x0: np.ndarray,
+        u_prev: np.ndarray,
+        waypoint: np.ndarray,
+        grid_bounds: np.ndarray | None = None,
     ) -> tuple[list[np.ndarray], list[np.ndarray]]:
         """Navigate from x0 to waypoint and return the trajectory.
 
@@ -127,6 +150,8 @@ class RobotNavSim:
             x0 (np.ndarray): start state (x, y, theta)
             u_prev (np.ndarray): previous control output (v, w)
             waypoint (np.ndarray): destination location
+            grid_bounds(ndarray): if given, a square region in (x,y). If the trajectory leaves this region, navigate()
+            returns early. Form: ((xlim), (ylim))
 
         Returns:
             tuple[list[np.ndarray], list[np.ndarray]]:
@@ -143,6 +168,8 @@ class RobotNavSim:
         while it < self.c.max_iter:
             all_x.append(x)
             if np.linalg.norm(x[0:2] - waypoint) < self.c.dist_thresh_m:
+                return all_x, all_u
+            if grid_bounds and self._point_is_out_of_bounds(x[0:2], grid_bounds):
                 return all_x, all_u
             u = self.ctl.tick(x, u, waypoint)
             x_ideal = self.motion.tick(u, x, self.c.dt)
