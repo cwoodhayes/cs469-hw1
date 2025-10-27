@@ -102,6 +102,9 @@ class RobotNavSim:
         dt: float = 0.1
         x_noise_stddev: float = 0.02
 
+        w_noise_stddev_percent_wmax: float = 0.00
+        v_noise_stddev_percent_vmax: float = 0.00
+
     def __init__(
         self,
         cfg: Config,
@@ -174,7 +177,21 @@ class RobotNavSim:
             ):
                 return all_x, all_u
             u = self.ctl.tick(x, u, waypoint)
-            x_ideal = self.motion.tick(u, x, self.c.dt)
+            u_noise = np.array(
+                [
+                    self.rng.normal(
+                        0, self.ctl.c.vdot_max * self.c.v_noise_stddev_percent_vmax
+                    ),
+                    self.rng.normal(
+                        0, self.ctl.c.wdot_max * self.c.w_noise_stddev_percent_wmax
+                    ),
+                ]
+            )
+            x_ideal = self.motion.tick(
+                u + u_noise,
+                x,
+                self.c.dt,
+            )
             x = x_ideal + self.rng.normal(0, self.c.x_noise_stddev, size=x.shape)
             all_u.append(u)
             it += 1

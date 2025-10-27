@@ -66,6 +66,8 @@ class Map:
         self.grid[self._start_loc] = 2
         self.grid[self._goal_loc] = 3
 
+        self.cell_diag_len = np.sqrt(2 * (self.c.cell_size**2))
+
     def world_coords_to_grid_loc(self, coord: np.ndarray) -> tuple[int, int]:
         """
         Convert world coordinates (as [x,y]) into grid indices (row,col) of the cell containing that location
