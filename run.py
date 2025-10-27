@@ -12,6 +12,7 @@ import signal
 
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 import numpy as np
 
 from hw1.astar import AStar
@@ -37,12 +38,13 @@ def main():
     # my assigned dataset is ds1, so I'm hardcoding this
     ds = Dataset.from_dataset_directory(REPO_ROOT / "data/ds1")
 
-    q3(ds)
-    q5(ds)
-    q7(ds)
-    q8(ds)
-    q9(ds)
-    q10(ds)
+    # q3(ds)
+    # q5(ds)
+    # q7(ds)
+    # q8(ds)
+    # q9(ds)
+    # q10(ds)
+    q11(ds)
 
     if ns.save:
         print("Saving figures...")
@@ -64,11 +66,49 @@ def get_cli_args() -> argparse.Namespace:
     return cli.parse_args()
 
 
+def q11(ds: Dataset):
+    starts = [(0.5, -1.5), (4.5, 3.5), (-0.5, 5.5)]
+    goals = [(0.5, 1.5), (4.5, -1.5), (1.5, -3.5)]
+
+    fig = run_sim(ds, starts, goals, 0.1, "Q11-fine", False)
+    fig.suptitle(
+        "Q11: Online A*, online control (cell_size=0.1)",
+        fontsize=16,
+        fontweight="bold",
+    )
+    fig.show()
+
+    fig2 = run_sim(ds, starts, goals, 1.0, "Q11-coarse", True)
+    fig2.suptitle(
+        "Q11: Online A*, online control (cell_size=1)",
+        fontsize=16,
+        fontweight="bold",
+    )
+    fig2.show()
+
+
 def q10(ds: Dataset):
     starts = [(2.45, -3.55), (4.95, -0.05), (-0.55, 1.45)]
     goals = [(0.95, -1.55), (2.45, 0.25), (1.95, 3.95)]
 
-    fig = plt.figure("Q10", figsize=(20, 12))
+    fig = run_sim(ds, starts, goals, 0.1, "Q10")
+    fig.suptitle(
+        "Q10: Online A*, online control (x noise stddev=0.1)",
+        fontsize=16,
+        fontweight="bold",
+    )
+    fig.show()
+
+
+def run_sim(
+    ds: Dataset,
+    starts: list[tuple],
+    goals: list[tuple],
+    cell_size: float,
+    figname: str,
+    show_full_map: bool = False,
+) -> Figure:
+    fig = plt.figure(figname, figsize=(20, 12))
     axes: list[Axes] = fig.subplots(1, 3)
 
     ctl_cfg = WaypointController.Config(
@@ -89,7 +129,7 @@ def q10(ds: Dataset):
                     [-6, 6],
                 ]
             ),
-            cell_size=0.1,
+            cell_size=cell_size,
             start=np.array(start_loc),
             goal=np.array(goal_loc),
             obstacle_radius=0.3,
@@ -101,7 +141,14 @@ def q10(ds: Dataset):
         waypoints = np.array(path.get_centers(map))
         groundtruth_map = Map.construct_from_dataset(ds, cfg)
 
-        plot_path_on_map(map, axes[idx], path, groundtruth_map, plot_centers=False)
+        plot_path_on_map(
+            map,
+            axes[idx],
+            path,
+            groundtruth_map,
+            plot_centers=False,
+            show_full_map=show_full_map,
+        )
         plot_trajectory_over_waypoints(axes[idx], traj, waypoints, sim.c.dist_thresh_m)
         total_t = round(sim.c.dt * len(traj), 2)
         axes[idx].set_title(
@@ -109,83 +156,86 @@ def q10(ds: Dataset):
         )
 
     fig.legend(*axes[-1].get_legend_handles_labels(), loc="lower center", ncol=3)
-    fig.suptitle(
-        f"Q10: Online A*, online control (x noise stddev={sim.c.x_noise_stddev})",
-        fontsize=16,
-        fontweight="bold",
-    )
-    fig.show()
+    return fig
 
 
 def q9(ds: Dataset):
     starts = [(2.45, -3.55), (4.95, -0.05), (-0.55, 1.45)]
     goals = [(0.95, -1.55), (2.45, 0.25), (1.95, 3.95)]
 
-    fig = plt.figure("Q9", figsize=(20, 12))
-    axes: list[Axes] = fig.subplots(1, 3)
+    stddevs = [0.0, 0.02]
 
-    stddev = 0.02
+    for stddev in stddevs:
+        fig = plt.figure(f"Q9-std-{stddev}", figsize=(20, 12))
+        axes: list[Axes] = fig.subplots(1, 3)
 
-    for start_loc, goal_loc, idx in zip(starts, goals, range(3)):
-        cfg = Map.Config(
-            dimensions=np.array(
-                [
-                    [-2, 5],
-                    [-6, 6],
-                ]
-            ),
-            cell_size=0.1,
-            start=np.array(start_loc),
-            goal=np.array(goal_loc),
-            obstacle_radius=0.3,
+        for start_loc, goal_loc, idx in zip(starts, goals, range(3)):
+            cfg = Map.Config(
+                dimensions=np.array(
+                    [
+                        [-2, 5],
+                        [-6, 6],
+                    ]
+                ),
+                cell_size=0.1,
+                start=np.array(start_loc),
+                goal=np.array(goal_loc),
+                obstacle_radius=0.3,
+            )
+
+            path, map, _ = run_astar_online(ds, cfg)
+            path.print()
+
+            # target the waypoints above
+            waypoints = np.array(path.get_centers(map))
+            # ignore the first waypoint--that's our start
+            x = np.array([*waypoints[0], -np.pi / 2])
+            waypoints = waypoints[1:, :]
+            ctl_cfg = WaypointController.Config(
+                vK_p=0.1,
+                vp_0=0.03,
+                wK_p=6.0,
+                wp_0=0.0,
+                vdot_max=0.288,
+                wdot_max=5.579,
+            )
+            sim = RobotNavSim(
+                RobotNavSim.Config(x_noise_stddev=stddev), WaypointController(ctl_cfg)
+            )
+            all_x = []
+            u = np.full((2,), np.nan, dtype=np.float32)
+
+            for wp_idx in range(len(waypoints)):
+                traj, u_all = sim.navigate(x, u, waypoints[wp_idx])
+                x = traj[-1]
+                u = u_all[-1] if len(u_all) > 0 else u
+                print(f"found waypoint {wp_idx} (it={len(traj)})")
+                all_x.extend(traj)
+
+            groundtruth_map = Map.construct_from_dataset(ds, cfg)
+            plot_path_on_map(
+                map,
+                axes[idx],
+                path,
+                groundtruth_map,
+                plot_centers=False,
+                show_full_map=False,
+            )
+            plot_trajectory_over_waypoints(
+                axes[idx], np.array(all_x), waypoints, sim.c.dist_thresh_m
+            )
+            total_t = round(sim.c.dt * len(all_x), 2)
+            axes[idx].set_title(
+                f"S={start_loc}, G={goal_loc} (#iter={len(all_x)}, t={total_t}s)"
+            )
+
+        fig.legend(*axes[-1].get_legend_handles_labels(), loc="lower center", ncol=3)
+        fig.suptitle(
+            f"Q9: Online A*, post-hoc control (x noise stddev={stddev})",
+            fontsize=16,
+            fontweight="bold",
         )
-
-        path, map, _ = run_astar_online(ds, cfg)
-        path.print()
-
-        # target the waypoints above
-        waypoints = np.array(path.get_centers(map))
-        # ignore the first waypoint--that's our start
-        x = np.array([*waypoints[0], -np.pi / 2])
-        waypoints = waypoints[1:, :]
-        ctl_cfg = WaypointController.Config(
-            vK_p=0.1,
-            vp_0=0.03,
-            wK_p=6.0,
-            wp_0=0.0,
-            vdot_max=0.288,
-            wdot_max=5.579,
-        )
-        sim = RobotNavSim(
-            RobotNavSim.Config(x_noise_stddev=stddev), WaypointController(ctl_cfg)
-        )
-        all_x = []
-        u = np.full((2,), np.nan, dtype=np.float32)
-
-        for wp_idx in range(len(waypoints)):
-            traj, u_all = sim.navigate(x, u, waypoints[wp_idx])
-            x = traj[-1]
-            u = u_all[-1] if len(u_all) > 0 else u
-            print(f"found waypoint {wp_idx} (it={len(traj)})")
-            all_x.extend(traj)
-
-        groundtruth_map = Map.construct_from_dataset(ds, cfg)
-        plot_path_on_map(map, axes[idx], path, groundtruth_map, plot_centers=False)
-        plot_trajectory_over_waypoints(
-            axes[idx], np.array(all_x), waypoints, sim.c.dist_thresh_m
-        )
-        total_t = round(sim.c.dt * len(all_x), 2)
-        axes[idx].set_title(
-            f"S={start_loc}, G={goal_loc} (#iter={len(all_x)}, t={total_t}s)"
-        )
-
-    fig.legend(*axes[-1].get_legend_handles_labels(), loc="lower center", ncol=3)
-    fig.suptitle(
-        f"Q9: Online A*, post-hoc control (x noise stddev={stddev})",
-        fontsize=16,
-        fontweight="bold",
-    )
-    fig.show()
+        fig.show()
 
 
 def q8(ds: Dataset) -> None:
@@ -261,7 +311,14 @@ def q7(ds: Dataset):
         path.print()
 
         groundtruth_map = Map.construct_from_dataset(ds, cfg)
-        plot_path_on_map(map, axes[idx], path, groundtruth_map, plot_centers=False)
+        plot_path_on_map(
+            map,
+            axes[idx],
+            path,
+            groundtruth_map,
+            plot_centers=False,
+            show_full_map=False,
+        )
         axes[idx].set_title(f"S={start_loc}, G={goal_loc}")
 
     fig.legend(*axes[-1].get_legend_handles_labels(), loc="lower center", ncol=3)

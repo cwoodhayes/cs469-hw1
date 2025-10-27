@@ -11,7 +11,9 @@ from hw1.map import Map
 from hw1 import astar
 
 
-def plot_map(map: Map, ax: Axes, groundtruth_map: Map | None = None) -> None:
+def plot_map(
+    map: Map, ax: Axes, groundtruth_map: Map | None = None, set_limits: bool = True
+) -> None:
     ##### Plot the obstacles
     patch = None
     obs_locs = map.get_obstacle_locs()
@@ -66,10 +68,11 @@ def plot_map(map: Map, ax: Axes, groundtruth_map: Map | None = None) -> None:
     )
 
     ##### Make legend and grid
-    xlim = map.c.dimensions[0, :]
-    ylim = map.c.dimensions[1, :]
-    ax.set_xlim(*xlim)
-    ax.set_ylim(*ylim)
+    if set_limits:
+        xlim = map.c.dimensions[0, :]
+        ylim = map.c.dimensions[1, :]
+        ax.set_xlim(*xlim)
+        ax.set_ylim(*ylim)
 
     ax.grid(True)
     ax.xaxis.set_minor_locator(MultipleLocator(map.c.cell_size))
@@ -84,6 +87,7 @@ def plot_path_on_map(
     p: astar.Path,
     groundtruth_map: Map | None = None,
     plot_centers: bool = True,
+    show_full_map: bool = True,
 ) -> None:
     """
     plots the robot path discoverd by A* on the map.
@@ -91,7 +95,7 @@ def plot_path_on_map(
     if supplied, groundtruth_map supplies the obstacles that were
     not discovered by the robot, which are displayed in grey
     """
-    plot_map(map, ax, groundtruth_map)
+    plot_map(map, ax, groundtruth_map, set_limits=show_full_map)
 
     # Fill in every cell visited in light blue
     centers = []
@@ -121,6 +125,11 @@ def plot_path_on_map(
     ax.plot(c_arr[0, 0], c_arr[0, 1], marker="o", color="#00FF55", ms=10, zorder=1.1)
     ax.plot(c_arr[-1, 0], c_arr[-1, 1], marker="o", color="#FFD900", ms=10, zorder=1.1)
 
+    if not show_full_map:
+        ax.dataLim.update_from_data_xy(c_arr, ignore=True)
+        ax.autoscale_view()
+        ax.set_aspect("equal", adjustable="datalim")
+
 
 def plot_trajectory_over_waypoints(
     ax: Axes,
@@ -140,7 +149,7 @@ def plot_trajectory_over_waypoints(
         whether a waypoint was reached
     """
 
-    ax.scatter(waypoints[:, 0], waypoints[:, 1], c="#BB4C4C", label="Waypoint")
+    ax.scatter(waypoints[:, 0], waypoints[:, 1], c="#BB4C4C", s=8, label="Waypoint")
     if traj is not None and traj.size > 0:
         ax.plot(traj[:, 0], traj[:, 1], "bo-", ms=4, label="Robot Path")
 
