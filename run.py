@@ -1,7 +1,12 @@
 """
+Entry point.
+
+Simulates A* plus a low level controller for path planning & execution.
+
 author: conor hayes
 """
 
+import argparse
 import pathlib
 import signal
 
@@ -18,6 +23,7 @@ from hw1.motion_control import WaypointController, RobotNavSim
 
 
 REPO_ROOT = pathlib.Path(__file__).parent
+FIGURES_DIR = REPO_ROOT / "figures"
 
 
 def main():
@@ -26,25 +32,43 @@ def main():
     # cite: this stackoverflow answer:
     # https://stackoverflow.com/questions/67977761/how-to-make-plt-show-responsive-to-ctrl-c
     signal.signal(signal.SIGINT, signal.SIG_DFL)
+    ns = get_cli_args()
 
     # my assigned dataset is ds1, so I'm hardcoding this
     ds = Dataset.from_dataset_directory(REPO_ROOT / "data/ds1")
 
-    # q3(ds)
-    # q5(ds)
-    # q7(ds)
+    q3(ds)
+    q5(ds)
+    q7(ds)
     q8(ds)
-    # q9(ds)
+    q9(ds)
     q10(ds)
 
-    plt.show()
+    if ns.save:
+        print("Saving figures...")
+        for num in plt.get_fignums():
+            fig = plt.figure(num)
+            name = fig.get_label() or f"figure_{num}"
+            fig.savefig(FIGURES_DIR / f"{name}.png")
+    else:
+        plt.show()
+
+
+def get_cli_args() -> argparse.Namespace:
+    cli = argparse.ArgumentParser("online A* + diff-drive control simulator")
+    cli.add_argument(
+        "-s",
+        "--save",
+        action="store_true",
+    )
+    return cli.parse_args()
 
 
 def q10(ds: Dataset):
     starts = [(2.45, -3.55), (4.95, -0.05), (-0.55, 1.45)]
     goals = [(0.95, -1.55), (2.45, 0.25), (1.95, 3.95)]
 
-    fig = plt.figure(figsize=(20, 12))
+    fig = plt.figure("Q10", figsize=(20, 12))
     axes: list[Axes] = fig.subplots(1, 3)
 
     ctl_cfg = WaypointController.Config(
@@ -80,10 +104,16 @@ def q10(ds: Dataset):
         plot_path_on_map(map, axes[idx], path, groundtruth_map, plot_centers=False)
         plot_trajectory_over_waypoints(axes[idx], traj, waypoints, sim.c.dist_thresh_m)
         total_t = sim.c.dt * len(traj)
-        axes[idx].set_title(f"S={start_loc}, G={goal_loc}, t={total_t}s")
+        axes[idx].set_title(
+            f"S={start_loc}, G={goal_loc} (#iter={len(traj)}, t={total_t}s)"
+        )
 
     fig.legend(*axes[-1].get_legend_handles_labels(), loc="lower center", ncol=3)
-    fig.suptitle("Q10: Online A*, online control", fontsize=16, fontweight="bold")
+    fig.suptitle(
+        f"Q10: Online A*, online control (x noise stddev={sim.c.x_noise_stddev})",
+        fontsize=16,
+        fontweight="bold",
+    )
     fig.show()
 
 
@@ -91,8 +121,10 @@ def q9(ds: Dataset):
     starts = [(2.45, -3.55), (4.95, -0.05), (-0.55, 1.45)]
     goals = [(0.95, -1.55), (2.45, 0.25), (1.95, 3.95)]
 
-    fig = plt.figure(figsize=(20, 12))
+    fig = plt.figure("Q9", figsize=(20, 12))
     axes: list[Axes] = fig.subplots(1, 3)
+
+    stddev = 0.02
 
     for start_loc, goal_loc, idx in zip(starts, goals, range(3)):
         cfg = Map.Config(
@@ -124,7 +156,9 @@ def q9(ds: Dataset):
             vdot_max=0.288,
             wdot_max=5.579,
         )
-        sim = RobotNavSim(RobotNavSim.Config(), WaypointController(ctl_cfg))
+        sim = RobotNavSim(
+            RobotNavSim.Config(x_noise_stddev=stddev), WaypointController(ctl_cfg)
+        )
         all_x = []
         u = np.full((2,), np.nan, dtype=np.float32)
 
@@ -143,7 +177,11 @@ def q9(ds: Dataset):
         axes[idx].set_title(f"S={start_loc}, G={goal_loc}")
 
     fig.legend(*axes[-1].get_legend_handles_labels(), loc="lower center", ncol=3)
-    fig.suptitle("Q9: Online A*, post-hoc control", fontsize=16, fontweight="bold")
+    fig.suptitle(
+        f"Q9: Online A*, post-hoc control (x noise stddev={stddev})",
+        fontsize=16,
+        fontweight="bold",
+    )
     fig.show()
 
 
@@ -161,7 +199,7 @@ def q8(ds: Dataset) -> None:
     )
     stddevs = [0.0, 0.1, 0.4, 0.8]
     dt = 0.1
-    fig = plt.figure(figsize=(20, 6))
+    fig = plt.figure("Q8", figsize=(20, 6))
     axes = fig.subplots(1, 4)
 
     for std, ax in zip(stddevs, axes):
@@ -199,7 +237,7 @@ def q7(ds: Dataset):
     starts = [(2.45, -3.55), (4.95, -0.05), (-0.55, 1.45)]
     goals = [(0.95, -1.55), (2.45, 0.25), (1.95, 3.95)]
 
-    fig = plt.figure(figsize=(10, 6))
+    fig = plt.figure("Q7", figsize=(10, 6))
     axes: list[Axes] = fig.subplots(1, 3)
 
     for start_loc, goal_loc, idx in zip(starts, goals, range(3)):
@@ -236,7 +274,7 @@ def q5(ds: Dataset):
     starts = [(0.5, -1.5), (4.5, 3.5), (-0.5, 5.5)]
     goals = [(0.5, 1.5), (4.5, -1.5), (1.5, -3.5)]
 
-    fig = plt.figure(figsize=(10, 6))
+    fig = plt.figure("Q5", figsize=(10, 6))
     axes: list[Axes] = fig.subplots(1, 3)
 
     for start_loc, goal_loc, idx in zip(starts, goals, range(3)):
@@ -270,7 +308,7 @@ def q3(ds: Dataset):
     starts = [(0.5, -1.5), (4.5, 3.5), (-0.5, 5.5)]
     goals = [(0.5, 1.5), (4.5, -1.5), (1.5, -3.5)]
 
-    fig = plt.figure(figsize=(10, 6))
+    fig = plt.figure("Q3", figsize=(10, 6))
     axes: list[Axes] = fig.subplots(1, 3)
 
     for start_loc, goal_loc, idx in zip(starts, goals, range(3)):
