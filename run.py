@@ -103,7 +103,7 @@ def q10(ds: Dataset):
 
         plot_path_on_map(map, axes[idx], path, groundtruth_map, plot_centers=False)
         plot_trajectory_over_waypoints(axes[idx], traj, waypoints, sim.c.dist_thresh_m)
-        total_t = sim.c.dt * len(traj)
+        total_t = round(sim.c.dt * len(traj), 2)
         axes[idx].set_title(
             f"S={start_loc}, G={goal_loc} (#iter={len(traj)}, t={total_t}s)"
         )
@@ -174,7 +174,10 @@ def q9(ds: Dataset):
         plot_trajectory_over_waypoints(
             axes[idx], np.array(all_x), waypoints, sim.c.dist_thresh_m
         )
-        axes[idx].set_title(f"S={start_loc}, G={goal_loc}")
+        total_t = round(sim.c.dt * len(all_x), 2)
+        axes[idx].set_title(
+            f"S={start_loc}, G={goal_loc} (#iter={len(all_x)}, t={total_t}s)"
+        )
 
     fig.legend(*axes[-1].get_legend_handles_labels(), loc="lower center", ncol=3)
     fig.suptitle(
