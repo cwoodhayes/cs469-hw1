@@ -74,21 +74,73 @@ def q11(ds: Dataset):
 
     u_noise = 0.1
 
-    fig = run_sim(ds, starts, goals, 0.1, "Q11-fine", False, u_noise=u_noise)
-    fig.suptitle(
-        "Q11: Online A*, online control (cell_size=0.1)",
-        fontsize=16,
-        fontweight="bold",
+    ctl_cfg = WaypointController.Config(
+        vK_p=0.1,
+        vp_0=0.03,
+        wK_p=6.0,
+        wp_0=0.0,
+        vdot_max=0.288,
+        wdot_max=5.579,
     )
-    fig.show()
+    sim = RobotNavSim(
+        RobotNavSim.Config(
+            w_noise_stddev_percent_wmax=u_noise,
+            v_noise_stddev_percent_vmax=u_noise,
+            x_noise_stddev=0.0,
+        ),
+        WaypointController(ctl_cfg),
+    )
 
-    fig2 = run_sim(ds, starts, goals, 1.0, "Q11-coarse", True, u_noise=u_noise)
-    fig2.suptitle(
-        "Q11: Online A*, online control (cell_size=1)",
-        fontsize=16,
-        fontweight="bold",
+    fig = plt.figure(
+        "Q11: Online A*, online control (varying cell size)", figsize=(20, 13)
     )
-    fig2.show()
+    axes: list[Axes] = fig.subplots(1, 3)
+
+    for start_loc, goal_loc, idx in zip(starts, goals, range(3)):
+        for cell_size in [0.1, 1.0]:
+            cfg = Map.Config(
+                dimensions=np.array(
+                    [
+                        [-2, 5],
+                        [-6, 6],
+                    ]
+                ),
+                cell_size=cell_size,
+                start=np.array(start_loc),
+                goal=np.array(goal_loc),
+                obstacle_radius=0.3,
+            )
+
+            path, map, traj = run_astar_online(ds, cfg, sim)
+            path.print()
+
+            waypoints = np.array(path.get_centers(map))
+            groundtruth_map = Map.construct_from_dataset(ds, cfg)
+
+            superimpose = True if cell_size == 1.0 else False
+            plot_path_on_map(
+                map,
+                axes[idx],
+                path,
+                groundtruth_map,
+                plot_centers=False,
+                show_full_map=True,
+                is_superimposed=superimpose,
+            )
+            plot_trajectory_over_waypoints(
+                axes[idx],
+                traj,
+                waypoints,
+                sim.c.dist_thresh_m,
+                secondary_trajectory=superimpose,
+            )
+            total_t = round(sim.c.dt * len(traj), 2)
+            axes[idx].set_title(
+                f"S={start_loc}, G={goal_loc} (#iter={len(traj)}, t={total_t}s)"
+            )
+
+    fig.legend(*axes[-1].get_legend_handles_labels(), loc="lower center", ncol=3)
+    fig.subplots_adjust(bottom=0.15)
 
 
 def q10(ds: Dataset):

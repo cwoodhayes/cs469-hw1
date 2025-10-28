@@ -83,7 +83,8 @@ def run_astar_online(
             u = u_all[-1] if len(u_all) > 0 else u
             x_all.extend(traj)
             robot_loc = map.world_coords_to_grid_loc(x[0:2])
-            path.nodes.append(Node(robot_loc))
+            if map.grid[robot_loc] != 1:
+                path.nodes.append(Node(robot_loc))
             print(f"Reached: loc={robot_loc}, x={x.round(2)}")
         else:
             robot_loc = target_loc

@@ -88,6 +88,7 @@ def plot_path_on_map(
     groundtruth_map: Map | None = None,
     plot_centers: bool = True,
     show_full_map: bool = True,
+    is_superimposed: bool = False,
 ) -> None:
     """
     plots the robot path discoverd by A* on the map.
@@ -95,7 +96,11 @@ def plot_path_on_map(
     if supplied, groundtruth_map supplies the obstacles that were
     not discovered by the robot, which are displayed in grey
     """
-    plot_map(map, ax, groundtruth_map, set_limits=show_full_map)
+    if is_superimposed:
+        path_color = "#E5D54537"
+    else:
+        plot_map(map, ax, groundtruth_map, set_limits=show_full_map)
+        path_color = "#4590E57B"
 
     # Fill in every cell visited in light blue
     centers = []
@@ -106,7 +111,7 @@ def plot_path_on_map(
             corner,  # type: ignore
             map.c.cell_size,
             -map.c.cell_size,
-            color="#4590E57B",
+            color=path_color,
         )
         ax.add_patch(rect)
         center_x = corner[0] + map.c.cell_size / 2
@@ -114,7 +119,10 @@ def plot_path_on_map(
         centers.append((center_x, center_y))
 
     if rect is not None:
-        rect.set_label("Robot Path")
+        if is_superimposed:
+            rect.set_label("Robot Path (coarse grid)")
+        else:
+            rect.set_label("Robot Path")
 
     c_arr = np.array(centers)
 
@@ -136,6 +144,7 @@ def plot_trajectory_over_waypoints(
     traj: np.ndarray | None,
     waypoints: np.ndarray,
     distance_threshold: float,
+    secondary_trajectory: bool = False,
 ) -> None:
     """
     Plot a controlled robot trajectory
@@ -151,7 +160,12 @@ def plot_trajectory_over_waypoints(
 
     ax.scatter(waypoints[:, 0], waypoints[:, 1], c="#BB4C4C", s=8, label="Waypoint")
     if traj is not None and traj.size > 0:
-        ax.plot(traj[:, 0], traj[:, 1], "bo-", ms=4, label="Robot Path")
+        if secondary_trajectory:
+            ax.plot(
+                traj[:, 0], traj[:, 1], "ro-", ms=3, label="Robot Path (coarse grid)"
+            )
+        else:
+            ax.plot(traj[:, 0], traj[:, 1], "bo-", ms=3, label="Robot Path")
 
     c = None
     for wp in waypoints:
@@ -160,4 +174,5 @@ def plot_trajectory_over_waypoints(
         )
         ax.add_patch(c)
     if c is not None:
-        c.set_label("Waypoint radius")
+        if not secondary_trajectory:
+            c.set_label("Waypoint radius")
