@@ -67,7 +67,7 @@ def plot_map(
         )
     )
 
-    ##### Make legend and grid
+    ##### Make limits and grid
     if set_limits:
         xlim = map.c.dimensions[0, :]
         ylim = map.c.dimensions[1, :]

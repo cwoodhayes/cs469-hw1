@@ -62,6 +62,9 @@ def run_astar_online(
 
         # plan a path given our current knowledge
         p = algo.solve(map, robot_loc)
+        if len(p) == 0:
+            print("ERROR: A* did not find a solution!")
+            break
 
         # move to the next location in the new path
         target_loc = p.locs[1]

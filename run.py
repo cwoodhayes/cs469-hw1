@@ -33,6 +33,8 @@ def main():
     # cite: this stackoverflow answer:
     # https://stackoverflow.com/questions/67977761/how-to-make-plt-show-responsive-to-ctrl-c
     signal.signal(signal.SIGINT, signal.SIG_DFL)
+    plt.rcParams["legend.fontsize"] = 14
+
     ns = get_cli_args()
 
     # my assigned dataset is ds1, so I'm hardcoding this
@@ -70,7 +72,9 @@ def q11(ds: Dataset):
     starts = [(0.5, -1.5), (4.5, 3.5), (-0.5, 5.5)]
     goals = [(0.5, 1.5), (4.5, -1.5), (1.5, -3.5)]
 
-    fig = run_sim(ds, starts, goals, 0.1, "Q11-fine", False)
+    u_noise = 0.1
+
+    fig = run_sim(ds, starts, goals, 0.1, "Q11-fine", False, u_noise=u_noise)
     fig.suptitle(
         "Q11: Online A*, online control (cell_size=0.1)",
         fontsize=16,
@@ -78,7 +82,7 @@ def q11(ds: Dataset):
     )
     fig.show()
 
-    fig2 = run_sim(ds, starts, goals, 1.0, "Q11-coarse", True)
+    fig2 = run_sim(ds, starts, goals, 1.0, "Q11-coarse", True, u_noise=u_noise)
     fig2.suptitle(
         "Q11: Online A*, online control (cell_size=1)",
         fontsize=16,
@@ -91,9 +95,10 @@ def q10(ds: Dataset):
     starts = [(2.45, -3.55), (4.95, -0.05), (-0.55, 1.45)]
     goals = [(0.95, -1.55), (2.45, 0.25), (1.95, 3.95)]
 
-    fig = run_sim(ds, starts, goals, 0.1, "Q10")
+    u_noise = 0.1
+    fig = run_sim(ds, starts, goals, 0.1, "Q10", False, u_noise=u_noise)
     fig.suptitle(
-        "Q10: Online A*, online control (x noise stddev=0.1)",
+        "Q10: Online A*, online control (v, w noise stddev=0.1)",
         fontsize=16,
         fontweight="bold",
     )
@@ -107,10 +112,10 @@ def run_sim(
     cell_size: float,
     figname: str,
     show_full_map: bool = False,
-    v_noise: float = 0.0,
-    w_noise: float = 0.0,
+    x_noise: float = 0.0,
+    u_noise: float = 0.2,
 ) -> Figure:
-    fig = plt.figure(figname, figsize=(20, 12))
+    fig = plt.figure(figname, figsize=(20, 13))
     axes: list[Axes] = fig.subplots(1, 3)
 
     ctl_cfg = WaypointController.Config(
@@ -123,7 +128,9 @@ def run_sim(
     )
     sim = RobotNavSim(
         RobotNavSim.Config(
-            w_noise_stddev_percent_wmax=w_noise, v_noise_stddev_percent_vmax=v_noise
+            w_noise_stddev_percent_wmax=u_noise,
+            v_noise_stddev_percent_vmax=u_noise,
+            x_noise_stddev=x_noise,
         ),
         WaypointController(ctl_cfg),
     )
@@ -163,6 +170,7 @@ def run_sim(
         )
 
     fig.legend(*axes[-1].get_legend_handles_labels(), loc="lower center", ncol=3)
+    fig.subplots_adjust(bottom=0.15)
     return fig
 
 
@@ -205,7 +213,10 @@ def q9(ds: Dataset):
             wdot_max=5.579,
         )
         sim = RobotNavSim(
-            RobotNavSim.Config(x_noise_stddev=stddev), WaypointController(ctl_cfg)
+            RobotNavSim.Config(
+                v_noise_stddev_percent_vmax=stddev, w_noise_stddev_percent_wmax=stddev
+            ),
+            WaypointController(ctl_cfg),
         )
         all_x = []
         u = np.full((2,), np.nan, dtype=np.float32)
@@ -236,10 +247,11 @@ def q9(ds: Dataset):
 
     fig.legend(*axes[-1].get_legend_handles_labels(), loc="lower center", ncol=3)
     fig.suptitle(
-        f"Q9: Online A*, post-hoc control (x noise stddev={stddev})",
+        f"Q9: Online A*, post-hoc control (v, w noise stddev={stddev})",
         fontsize=16,
         fontweight="bold",
     )
+    fig.subplots_adjust(bottom=0.15)
     fig.show()
 
 
@@ -262,7 +274,12 @@ def q8(ds: Dataset) -> None:
 
     for std, ax in zip(stddevs, axes):
         # target the waypoints above
-        sim_cfg = RobotNavSim.Config(dt=dt, x_noise_stddev=std, dist_thresh_m=0.5)
+        sim_cfg = RobotNavSim.Config(
+            dt=dt,
+            v_noise_stddev_percent_vmax=std,
+            w_noise_stddev_percent_wmax=std,
+            dist_thresh_m=0.5,
+        )
         sim = RobotNavSim(sim_cfg, WaypointController())
         all_x = []
         x = np.array([0.0, 0.0, 0.0])
@@ -278,7 +295,7 @@ def q8(ds: Dataset) -> None:
         plot_trajectory_over_waypoints(
             ax, np.array(all_x), waypoints, sim.c.dist_thresh_m
         )
-        ax.set_title(f"x noise stddev={std} (#iter={len(all_x)})")
+        ax.set_title(f"u noise stddev={std * 100}% max (#iter={len(all_x)})")
 
     fig.legend(*axes[-1].get_legend_handles_labels(), loc="lower center", ncol=3)
     fig.suptitle(
@@ -286,6 +303,7 @@ def q8(ds: Dataset) -> None:
         fontsize=16,
         fontweight="bold",
     )
+    fig.subplots_adjust(bottom=0.15)
     fig.show()
 
 
@@ -330,6 +348,7 @@ def q7(ds: Dataset):
     fig.suptitle(
         "Q7: Online A* paths (cell size = .1x.1m)", fontsize=16, fontweight="bold"
     )
+    fig.subplots_adjust(bottom=0.15)
     fig.show()
 
 
@@ -364,6 +383,7 @@ def q5(ds: Dataset):
 
     fig.legend(*axes[-1].get_legend_handles_labels(), loc="lower center", ncol=3)
     fig.suptitle("Q5: Online A* paths", fontsize=16, fontweight="bold")
+    fig.subplots_adjust(bottom=0.15)
     fig.show()
 
 

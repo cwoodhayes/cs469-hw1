@@ -44,6 +44,9 @@ class Path:
             print(f"{loc[0]}, {loc[1]}")
         print("~~~~~~~~~~~~~~~")
 
+    def __len__(self) -> int:
+        return len(self.nodes)
+
 
 class AStar:
     """
@@ -69,7 +72,7 @@ class AStar:
         """
         goal = map.get_goal_loc()
         dist = ((goal[0] - loc[0]) ** 2 + (goal[1] - loc[1]) ** 2) ** 0.5
-        return dist / map.c.cell_size
+        return dist / map.cell_diag_len
 
     @staticmethod
     def reconstruct_path(came_from: dict[Node, Node], current: Node) -> Path:

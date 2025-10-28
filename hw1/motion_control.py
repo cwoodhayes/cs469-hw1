@@ -100,10 +100,10 @@ class RobotNavSim:
         max_iter: int = 100
         dist_thresh_m: float = 0.05
         dt: float = 0.1
-        x_noise_stddev: float = 0.02
+        x_noise_stddev: float = 0.00
 
-        w_noise_stddev_percent_wmax: float = 0.00
-        v_noise_stddev_percent_vmax: float = 0.00
+        w_noise_stddev_percent_wmax: float = 0.1
+        v_noise_stddev_percent_vmax: float = 0.1
 
     def __init__(
         self,

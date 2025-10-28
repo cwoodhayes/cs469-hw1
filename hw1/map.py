@@ -66,7 +66,7 @@ class Map:
         self.grid[self._start_loc] = 2
         self.grid[self._goal_loc] = 3
 
-        self.cell_diag_len = np.sqrt(2 * (self.c.cell_size**2))
+        self.cell_diag_len = 1.0  # hardcoded
 
     def world_coords_to_grid_loc(self, coord: np.ndarray) -> tuple[int, int]:
         """
