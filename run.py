@@ -91,9 +91,7 @@ def q11(ds: Dataset):
         WaypointController(ctl_cfg),
     )
 
-    fig = plt.figure(
-        "Q11: Online A*, online control (varying cell size)", figsize=(20, 13)
-    )
+    fig = plt.figure("Q11", figsize=(20, 13))
     axes: list[Axes] = fig.subplots(1, 3)
 
     for start_loc, goal_loc, idx in zip(starts, goals, range(3)):
@@ -136,21 +134,27 @@ def q11(ds: Dataset):
             )
             total_t = round(sim.c.dt * len(traj), 2)
             axes[idx].set_title(
-                f"S={start_loc}, G={goal_loc} (#iter={len(traj)}, t={total_t}s)"
+                f"S={start_loc}, G={goal_loc} (#iter={len(traj)}, t={total_t}s)",
+                fontsize=16,
             )
 
     fig.legend(*axes[-1].get_legend_handles_labels(), loc="lower center", ncol=3)
     fig.subplots_adjust(bottom=0.15)
+    fig.suptitle(
+        "Q11: Online A*, online control (varying cell size)",
+        fontsize=22,
+        fontweight="bold",
+    )
 
 
 def q10(ds: Dataset):
     starts = [(2.45, -3.55), (4.95, -0.05), (-0.55, 1.45)]
     goals = [(0.95, -1.55), (2.45, 0.25), (1.95, 3.95)]
 
-    u_noise = 0.1
+    u_noise = 0.2
     fig = run_sim(ds, starts, goals, 0.1, "Q10", False, u_noise=u_noise)
     fig.suptitle(
-        "Q10: Online A*, online control (v, w noise stddev=0.1)",
+        "Q10: Online A*, online control (v, w noise stddev=0.2)",
         fontsize=16,
         fontweight="bold",
     )
