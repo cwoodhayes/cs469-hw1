@@ -12,10 +12,9 @@ All code is implemented in Python using only numerical + plotting libraries (Num
 
 A full writeup including derivations, algorithm descriptions, and discussion of results is available in [writeup.pdf](writeup.pdf).
 
-The system plans and executes robot navigation by combining:
-- **Offline A\*** path planning on a fully-known obstacle grid, using an admissible Euclidean-distance heuristic normalized by the cell diagonal length
-- **Online A\*** path planning with incremental obstacle discovery (robot observes obstacles only when adjacent to them)
-- **Obstacle inflation** by 0.3m in all directions for safer path clearance
+This repo builds up to the full implementation described above via the following components:
+- **Offline A\*** path planning on a fully-known obstacle grid.
+- **Online A\*** Wraps offline A* for path planning with incremental obstacle discovery (robot observes obstacles only when adjacent to them & recalculates path at each step).
 - A **dual P-controller** that drives the robot toward waypoints with configurable gains, biases, and acceleration limits
 - A **robot navigation simulator** (`RobotNavSim`) that propagates control outputs through the motion model with Gaussian noise
 
